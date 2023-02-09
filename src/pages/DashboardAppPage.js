@@ -1,27 +1,36 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
-// components
-import Iconify from '../components/iconify';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { selectIsLoggedIn } from '../redux/slices/mainSlice';
 // sections
 import {
-  AppTasks,
   AppNewsUpdate,
   AppOrderTimeline,
   AppCurrentVisits,
   AppWebsiteVisits,
-  AppTrafficBySite,
   AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
 } from '../sections/@dashboard/app';
+// components
+import Iconify from '../components/iconify';
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(isLoggedIn, 'Logged IN');
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn]);
 
   return (
     <>
@@ -175,7 +184,7 @@ export default function DashboardAppPage() {
               list={[...Array(5)].map((_, index) => ({
                 id: faker.datatype.uuid(),
                 title: [
-                  '1983, orders, $4220',
+                  '1983, orders, ₹4220',
                   '12 Invoices have been paid',
                   'Order #37745 from September',
                   'New order placed #XF-2356',

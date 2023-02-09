@@ -17,13 +17,13 @@ const navConfig = [
     icon: icon('ic_test'),
   },
   {
-    title: 'quiz',
-    path: '/dashboard/products',
+    title: 'test history',
+    path: '/dashboard/test-history',
     icon: icon('ic_cart'),
   },
   {
     title: 'settings',
-    path: '/dashboard/blog',
+    path: '/dashboard/settings',
     icon: icon('ic_settings'),
   },
   {

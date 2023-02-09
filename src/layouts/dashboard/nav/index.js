@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@mui/material';
@@ -12,6 +13,7 @@ import useResponsive from '../../../hooks/useResponsive';
 import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
+import { selectUser } from '../../../redux/slices/mainSlice';
 //
 import navConfig from './config';
 
@@ -36,6 +38,7 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
+  const user = useSelector(selectUser);
 
   const isDesktop = useResponsive('up', 'lg');
 
@@ -64,11 +67,11 @@ export default function Nav({ openNav, onCloseNav }) {
 
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {'Ravi Kumar'}
+                {user?.name}
               </Typography>
 
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {'ravi@gmail.com'}
+                {user?.email}
               </Typography>
             </Box>
           </StyledAccount>
@@ -93,7 +96,7 @@ export default function Nav({ openNav, onCloseNav }) {
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              From only $69
+              From only ₹699
             </Typography>
           </Box>
 

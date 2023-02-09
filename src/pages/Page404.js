@@ -9,11 +9,11 @@ import { Button, Typography, Container, Box } from '@mui/material';
 const StyledContent = styled('div')(({ theme }) => ({
   maxWidth: 480,
   margin: 'auto',
-  minHeight: '100vh',
+  minHeight: '90vh',
   display: 'flex',
   justifyContent: 'center',
   flexDirection: 'column',
-  padding: theme.spacing(12, 0),
+  padding: theme.spacing(10, 0),
 }));
 
 // ----------------------------------------------------------------------
@@ -39,7 +39,7 @@ export default function Page404() {
           <Box
             component="img"
             src="/assets/illustrations/illustration_404.svg"
-            sx={{ height: 260, mx: 'auto', my: { xs: 5, sm: 10 } }}
+            sx={{ height: 260, mx: 'auto', my: { xs: 3, sm: 7 } }}
           />
 
           <Button to="/" size="large" variant="contained" component={RouterLink}>
