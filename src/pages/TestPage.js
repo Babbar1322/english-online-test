@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState } from 'react';
 // @mui
 import {
@@ -199,9 +198,10 @@ export default function TestPage() {
                         <TableCell align="left">{type}</TableCell>
                         <TableCell align="left">{submission} Time(s)</TableCell>
 
-                        <TableCell align="right" sx={{ flexGrow: 0 }}>
+                        <TableCell align="right">
                           <Button
                             variant="contained"
+                            fullWidth
                             color="success"
                             startIcon={<Iconify icon={'ic:round-shopping-cart'} />}
                           >
