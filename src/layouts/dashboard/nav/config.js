@@ -1,5 +1,6 @@
 // component
 import SvgColor from '../../../components/svg-color';
+import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -15,22 +16,45 @@ const navConfig = [
     title: 'tests',
     path: '/dashboard/test',
     icon: icon('ic_test'),
+    hasChild: true,
+    child: [
+      {
+        title: 'total test',
+        path: '/dashboard/total-test',
+        icon: <Iconify icon="iconoir:page-flip" />,
+      },
+      {
+        title: 'pending test',
+        path: '/dashboard/pending-test',
+        icon: <Iconify icon="mdi:paperclip" />,
+      },
+      {
+        title: 'completed test',
+        path: '/dashboard/completed-test',
+        icon: <Iconify icon="ic:baseline-fact-check" />,
+      },
+      {
+        title: 'test result',
+        path: '/dashboard/test-result',
+        icon: <Iconify icon="ic:outline-check-box" />,
+      },
+    ],
   },
-  {
-    title: 'test history',
-    path: '/dashboard/test-history',
-    icon: icon('ic_cart'),
-  },
+  // {
+  //   title: 'test history',
+  //   path: '/dashboard/test-history',
+  //   icon: icon('ic_cart'),
+  // },
   {
     title: 'settings',
     path: '/dashboard/settings',
     icon: icon('ic_settings'),
   },
-  {
-    title: 'plans and pricing',
-    path: '/pricing',
-    icon: icon('ic_settings'),
-  },
+  // {
+  //   title: 'plans and pricing',
+  //   path: '/pricing',
+  //   icon: icon('ic_settings'),
+  // },
   // {
   //   title: 'login',
   //   path: '/login',

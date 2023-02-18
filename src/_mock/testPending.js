@@ -3,16 +3,16 @@ import { sample } from 'lodash';
 
 // ----------------------------------------------------------------------
 
-const users = [...Array(7)].map((_, index) => {
+const testHistory = [...Array(5)].map((_, index) => {
   return {
     id: faker.datatype.uuid(),
     name: sample(['CD-IELTS', 'IELTS SPEAKING', 'CD-IELTS']),
-    testId: `CD-IELTS Academic ${faker.datatype.number({ min: 1, max: 25 })}`,
-    totalTime: sample(['0.30', '0.30', '0.10', '0.20', '1.15']),
+    completation: faker.datatype.number({ min: 10, max: 100 }),
+    date: faker.datatype.datetime({ min: 1577836800000, max: 1893456000000 }),
     totalQuestions: faker.datatype.number({ min: 5, max: 30 }),
-    type: sample(['0.20', '0.25', '0.20', '1.0']),
-    submission: faker.datatype.number({ min: 3, max: 7 }),
+    timeSpent: sample([['0.10', '0.13', '0.18', '0.05', '0.11']]),
+    status: sample(['Pending']),
   };
 });
 
-export default users;
+export default testHistory;

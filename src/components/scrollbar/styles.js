@@ -2,12 +2,15 @@ import SimpleBar from 'simplebar-react';
 // @mui
 import { alpha, styled } from '@mui/material/styles';
 
+import { fadeInRight } from '../../utils/animations';
+
 // ----------------------------------------------------------------------
 
 export const StyledRootScrollbar = styled('div')(() => ({
   flexGrow: 1,
   height: '100%',
   overflow: 'hidden',
+  animation: `${fadeInRight} 0.4s ease`,
 }));
 
 export const StyledScrollbar = styled(SimpleBar)(({ theme }) => ({

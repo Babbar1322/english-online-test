@@ -4,10 +4,12 @@ import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
 import SettingsPage from './pages/SettingsPage';
-import TestPage from './pages/TestPage';
 import LoginPage from './pages/LoginPage';
+import TestResultPage from './pages/TestResultPage';
 import Page404 from './pages/Page404';
-import TestHistory from './pages/TestHistory';
+import TotalTestPage from './pages/TotalTestPage';
+import PendingTestPage from './pages/PendingTestPage';
+import CompletedTestPage from './pages/CompletedTestPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 
 // ----------------------------------------------------------------------
@@ -20,8 +22,10 @@ export default function Router() {
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
-        { path: 'test', element: <TestPage /> },
-        { path: 'test-history', element: <TestHistory /> },
+        { path: 'total-test', element: <TotalTestPage /> },
+        { path: 'pending-test', element: <PendingTestPage /> },
+        { path: 'completed-test', element: <CompletedTestPage /> },
+        { path: 'test-result', element: <TestResultPage /> },
         { path: 'settings', element: <SettingsPage /> },
       ],
     },
@@ -34,13 +38,13 @@ export default function Router() {
       element: <SimpleLayout />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: '404', element: <Page404 /> },
-        { path: '*', element: <Navigate to="/404" /> },
+        // { path: '404', element: <Page404 /> },
+        { path: '*', element: <Page404 /> },
       ],
     },
     {
       path: '*',
-      element: <Navigate to="/404" replace />,
+      element: <Page404 />,
     },
   ]);
 

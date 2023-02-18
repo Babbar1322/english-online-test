@@ -17,7 +17,7 @@ import {
   MenuItem,
   TableBody,
   TableCell,
-  Container,
+  // Container,
   Typography,
   IconButton,
   TableContainer,
@@ -28,23 +28,20 @@ import {
 import { selectIsLoggedIn } from '../redux/slices/mainSlice';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import Container from '../layouts/dashboard/container/Container';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import HISTORY from '../_mock/testHistory';
+import HISTORY from '../_mock/testPending';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'test-id', label: 'Test ID', alignRight: false },
   { id: 'test-name', label: 'Test Name', alignRight: false },
-  { id: 'completation', label: 'Completation', alignRight: false },
   { id: 'date', label: 'Date', alignRight: false },
-  { id: 'total-question', label: 'Total Questions / Attempt', alignRight: false },
-  { id: 'time-spent', label: 'Time Spent', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'total-question', label: 'Total Questions', alignRight: false },
   { id: 'view', label: 'View', alignRight: false },
-  { id: 'expert', label: 'Expert Evalution', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -78,7 +75,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function TestHistory() {
+export default function PendingTestPage() {
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -164,13 +161,13 @@ export default function TestHistory() {
   return (
     <>
       <Helmet>
-        <title> Test History | ESOL IELTS </title>
+        <title> Pending Test | ESOL IELTS </title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            Test History
+            Pending Test
           </Typography>
         </Stack>
 
@@ -189,7 +186,7 @@ export default function TestHistory() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, completation, date, totalQuestions, timeSpent, status } = row;
+                    const { id, name, date, totalQuestions } = row;
 
                     return (
                       <TableRow hover key={id}>
@@ -203,36 +200,13 @@ export default function TestHistory() {
 
                         <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">
-                          <LinearProgress
-                            variant="determinate"
-                            value={completation}
-                            sx={{ height: 10, borderRadius: 5 }}
-                          />
-                        </TableCell>
-
                         <TableCell align="left">{date.toDateString()}</TableCell>
 
-                        <TableCell align="left">
-                          {totalQuestions}/{totalQuestions - 3}
-                        </TableCell>
-                        <TableCell align="left">{timeSpent}</TableCell>
+                        <TableCell align="left">{totalQuestions}</TableCell>
 
-                        <TableCell align="left">{status}</TableCell>
                         <TableCell align="left">
                           <Button variant="contained" color="success">
-                            {status === 'Finished'
-                              ? 'Review Test'
-                              : status === 'Pending'
-                              ? 'Resume Test'
-                              : status === 'Continued'
-                              ? 'Restart'
-                              : null}
-                          </Button>
-                        </TableCell>
-                        <TableCell align="left">
-                          <Button variant="contained" color="primary">
-                            Take Expert Evalution
+                            Add To Cart
                           </Button>
                         </TableCell>
                       </TableRow>

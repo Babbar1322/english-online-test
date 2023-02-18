@@ -17,31 +17,32 @@ import {
   MenuItem,
   TableBody,
   TableCell,
-  Container,
+  // Container,
   Typography,
   IconButton,
   TableContainer,
   TablePagination,
+  LinearProgress,
 } from '@mui/material';
 // components
 import { selectIsLoggedIn } from '../redux/slices/mainSlice';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import Container from '../layouts/dashboard/container/Container';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
+import HISTORY from '../_mock/testCompleted';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'for', label: 'For Test', alignRight: false },
   { id: 'test-id', label: 'Test ID', alignRight: false },
-  { id: 'total-question', label: 'Total Question', alignRight: false },
-  { id: 'total-time', label: 'Total Time', alignRight: false },
-  { id: 'type', label: 'Test Type', alignRight: false },
-  { id: 'submission', label: 'Submission Available', alignRight: false },
-  { id: '' },
+  { id: 'test-name', label: 'Test Name', alignRight: false },
+  { id: 'date', label: 'Date', alignRight: false },
+  { id: 'total-question', label: 'Total Questions', alignRight: false },
+  { id: 'time-spent', label: 'Time Spent', alignRight: false },
+  { id: 'view', label: 'View', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -75,7 +76,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function TestPage() {
+export default function CompletedTestPage() {
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -110,7 +111,7 @@ export default function TestPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = HISTORY.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -146,9 +147,9 @@ export default function TestPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - HISTORY.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(HISTORY, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -161,17 +162,14 @@ export default function TestPage() {
   return (
     <>
       <Helmet>
-        <title> Test | ESOL IELTS </title>
+        <title> Completed Test | ESOL IELTS </title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            Tests
+            Completed Test
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            Take Test
-          </Button>
         </Stack>
 
         <Card>
@@ -184,40 +182,35 @@ export default function TestPage() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={HISTORY.length}
                   onRequestSort={handleRequestSort}
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, testId, totalTime, totalQuestions, type, submission } = row;
+                    const { id, name, date, timeSpent, totalQuestions } = row;
 
                     return (
                       <TableRow hover key={id}>
                         <TableCell component="th" scope="row" padding="normal">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
-                              {name}
+                              IELTS {id.split('-')[0]}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{testId}</TableCell>
+                        <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">{totalQuestions}</TableCell>
+                        <TableCell align="left">{date.toDateString()}</TableCell>
 
-                        <TableCell align="left">{totalTime}</TableCell>
+                        <TableCell align="left">
+                          {totalQuestions}/{totalQuestions - 3}
+                        </TableCell>
+                        <TableCell align="left">{timeSpent}</TableCell>
 
-                        <TableCell align="left">{type}</TableCell>
-                        <TableCell align="left">{submission} Time(s)</TableCell>
-
-                        <TableCell align="right">
-                          <Button
-                            variant="contained"
-                            fullWidth
-                            color="success"
-                            startIcon={<Iconify icon={'ic:round-shopping-cart'} />}
-                          >
-                            Add To Cart
+                        <TableCell align="left">
+                          <Button variant="contained" color="success">
+                            Review
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -260,7 +253,7 @@ export default function TestPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={HISTORY.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

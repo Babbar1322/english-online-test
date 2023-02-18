@@ -3,10 +3,11 @@ import { Helmet } from 'react-helmet-async';
 // @mui
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Grid, Button, Container, Stack, Typography } from '@mui/material';
+import { Grid, Button, Stack, Typography } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 import { BlogPostCard, BlogPostsSort, BlogPostsSearch } from '../sections/@dashboard/blog';
+import Container from '../layouts/dashboard/container/Container';
 // mock
 import POSTS from '../_mock/blog';
 import { selectIsLoggedIn } from '../redux/slices/mainSlice';

@@ -1,23 +1,24 @@
 import { forwardRef, useState } from 'react';
-// import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
+import { NavLink as RouterLink } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
 // @mui
-import { Stack, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Link, Stack, IconButton, InputAdornment, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
-import { setLogin, setToken } from '../../../redux/slices/mainSlice';
+import { setLogin } from '../../../redux/slices/mainSlice';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const dispatch = useDispatch();
-  // const navigate = useNavigate();
 
-  // const NavLink = forwardRef((props, ref) => <RouterLink ref={ref} {...props} />);
+  const NavLink = forwardRef((props, ref) => <RouterLink ref={ref} {...props} />);
 
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,12 @@ export default function LoginForm() {
   const handleEmail = (e) => {
     setEmail(e.target.value);
   };
+  const handleName = (e) => {
+    setName(e.target.value);
+  };
+  const handlePhone = (e) => {
+    setPhone(e.target.value);
+  };
   const handlePassword = (e) => {
     setPassword(e.target.value);
   };
@@ -34,20 +41,16 @@ export default function LoginForm() {
   const handleClick = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/register`, {
         email,
+        name,
+        phone,
         password,
       });
       console.log(res.data);
-      if (res.status === 200) {
-        dispatch(setToken(res.data.token));
-        dispatch(setLogin({ user: null }));
-        // navigate('/dashboard/login');
-      }
-      // dispatch(setLogin());
+      dispatch(setLogin());
     } catch (err) {
       console.log(err);
-      // alert(err);
     } finally {
       setLoading(false);
     }
@@ -56,13 +59,15 @@ export default function LoginForm() {
   return (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" onChange={handleEmail} defaultValue={email} />
+        <TextField name="name" label="Full name" defaultValue={name} onChange={handleName} />
+        <TextField name="phone" label="Phone number" defaultValue={phone} onChange={handlePhone} />
+        <TextField name="email" label="Email address" defaultValue={email} onChange={handleEmail} />
 
         <TextField
           name="password"
           label="Password"
-          onChange={handlePassword}
           defaultValue={password}
+          onChange={handlePassword}
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (
@@ -76,23 +81,15 @@ export default function LoginForm() {
         />
       </Stack>
 
-      {/* <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-        <Checkbox name="remember" title="Remember Me" />
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
+        {/* <Checkbox name="remember" title="Remember Me" /> */}
         <Link component={NavLink} variant="subtitle2" underline="hover" to="/">
           Forgot password?
         </Link>
-      </Stack> */}
+      </Stack>
 
-      <LoadingButton
-        loading={loading}
-        fullWidth
-        size="large"
-        sx={{ mt: 3 }}
-        type="submit"
-        variant="contained"
-        onClick={handleClick}
-      >
-        Login
+      <LoadingButton loading={loading} fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+        Signup
       </LoadingButton>
     </>
   );

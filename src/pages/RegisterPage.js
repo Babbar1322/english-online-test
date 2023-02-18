@@ -11,7 +11,7 @@ import useResponsive from '../hooks/useResponsive';
 import Logo from '../components/logo';
 import Iconify from '../components/iconify';
 // sections
-import { LoginForm } from '../sections/auth/login';
+import { RegisterForm } from '../sections/auth/register';
 import { fadeInUp, fadeInLeft } from '../utils/animations';
 import { selectIsLoggedIn } from '../redux/slices/mainSlice';
 
@@ -40,7 +40,7 @@ const StyledContent = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   flexDirection: 'column',
-  padding: theme.spacing(12, 0),
+  padding: theme.spacing(8, 0),
   animation: `${fadeInUp} 0.4s ease`,
 }));
 
@@ -54,21 +54,21 @@ const Heading = styled(Typography)({
 
 // ----------------------------------------------------------------------
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const navigate = useNavigate();
   const mdUp = useResponsive('up', 'md');
 
   useEffect(() => {
-    console.log(window.location);
     if (isLoggedIn) {
       navigate('/dashboard/app');
     }
   }, [isLoggedIn]);
+
   return (
     <>
       <Helmet>
-        <title> Login | ESOL </title>
+        <title> Register | ESOL </title>
       </Helmet>
 
       <StyledRoot>
@@ -85,10 +85,10 @@ export default function LoginPage() {
             {/* <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
               Hi, Welcome Back
             </Typography> */}
-            <Heading variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-              Hi, Welcome Back
+            <Heading variant="h3" sx={{ px: 5, mt: 5, mb: 5 }}>
+              Get Started
             </Heading>
-            <Image src="/assets/illustrations/illustration_login.png" alt="login" />
+            <Image src="/assets/illustrations/illustration_register.png" alt="register" />
           </StyledSection>
         )}
 
@@ -98,15 +98,15 @@ export default function LoginPage() {
               Sign in to ESOL
             </Typography> */}
             <Heading variant="h4" gutterBottom>
-              Sign in to ESOL
+              Create a new Account
             </Heading>
 
-            {/* <Typography variant="body2" sx={{ mb: 5 }}>
-              Don’t have an account? {''}
-              <Link component={NavLink} to="/register" variant="subtitle2">
-                Get started
+            <Typography variant="body2" sx={{ mb: 5 }}>
+              Already have an account? {''}
+              <Link component={NavLink} to="/login" variant="subtitle2">
+                Login
               </Link>
-            </Typography> */}
+            </Typography>
 
             <Stack direction="row" spacing={2}>
               <Button fullWidth size="large" color="inherit" variant="outlined" sx={{ boxShadow: 10 }}>
@@ -128,7 +128,7 @@ export default function LoginPage() {
               </Typography>
             </Divider>
 
-            <LoginForm />
+            <RegisterForm />
           </StyledContent>
         </Container>
       </StyledRoot>
