@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Link, Container, Typography, Divider, Stack, Button } from '@mui/material';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Container, Typography, Divider, Stack, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 // hooks
 import useResponsive from '../hooks/useResponsive';
@@ -60,7 +60,7 @@ export default function LoginPage() {
   const mdUp = useResponsive('up', 'md');
 
   useEffect(() => {
-    console.log(isLoggedIn);
+    // console.log(isLoggedIn);
     if (isLoggedIn) {
       navigate('/dashboard/app');
     }

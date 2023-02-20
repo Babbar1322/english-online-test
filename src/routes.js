@@ -15,6 +15,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 //
 import TestDashboardLayout from './layouts/testDashboard';
 import TestDashboard from './pages/TestDashboard';
+import ReadingTestPage from './pages/ReadingTestPage';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,7 @@ export default function Router() {
           index: true,
         },
         { path: 'dashboard', element: <TestDashboard /> },
+        { path: 'reading', element: <ReadingTestPage /> },
       ],
     },
     {

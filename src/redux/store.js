@@ -7,15 +7,15 @@ const rootReducer = combineReducers({
   main: mainSlice,
 });
 
-// const persistConfig = {
-//   key: 'root',
-//   storage,
-// };
+const persistConfig = {
+  key: 'root',
+  storage,
+};
 
-// const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: rootReducer,
+  reducer: persistedReducer,
 });
 
-// export const persistor = persistStore(store);
+export const persistor = persistStore(store);

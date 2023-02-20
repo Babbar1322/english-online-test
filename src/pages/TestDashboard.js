@@ -1,14 +1,22 @@
-import { Button, Container, Grid, Icon, Stack, styled, Typography } from '@mui/material';
+import { Button, Grid, Icon, Stack, styled, Typography } from '@mui/material';
+import { useEffect } from 'react';
+import { NavLink, useOutletContext } from 'react-router-dom';
 
 import Iconify from '../components/iconify';
+import Header from '../layouts/testDashboard/header';
 
 const H2 = styled('h2')({
   fontWeight: 'bold',
   textAlign: 'center',
 });
 export default function TestDashboard() {
+  const [button, setButton] = useOutletContext();
+  useEffect(() => {
+    setButton('home');
+  }, []);
   return (
-    <Container>
+    <div>
+      <Header button="home" />
       <H2>Practice Test Overview</H2>
       <Stack direction="row" spacing={5} justifyContent="center">
         <Grid item md={4} padding={2} borderRadius={3} sx={{ boxShadow: 4 }}>
@@ -43,7 +51,7 @@ export default function TestDashboard() {
               <Typography component={'span'}>60 Minutes</Typography>
             </Grid>
           </Grid>
-          <Button variant="contained" color="success" fullWidth>
+          <Button component={NavLink} to="/test/reading" variant="contained" color="success" fullWidth>
             RESUME
           </Button>
         </Grid>
@@ -121,6 +129,6 @@ export default function TestDashboard() {
           <Typography>How Listening, Reading and Writing section appear.</Typography>
         </Grid>
       </Stack>
-    </Container>
+    </div>
   );
 }
