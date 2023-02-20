@@ -17,6 +17,8 @@ const mainSlice = createSlice({
     setLogout: (state, action) => {
       state.isLoggedIn = false;
       state.user = null;
+      state.token = null;
+      localStorage.clear();
     },
     setToken: (state, action) => {
       state.token = action.payload;

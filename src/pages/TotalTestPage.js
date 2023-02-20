@@ -205,8 +205,8 @@ export default function TotalTestPage() {
                         <TableCell align="left">{totalQuestions}</TableCell>
 
                         <TableCell align="left">
-                          <Button variant="contained" color="success">
-                            Add To Cart
+                          <Button variant="contained" color="success" onClick={() => navigate('/test/dashboard')}>
+                            Take Test
                           </Button>
                         </TableCell>
                       </TableRow>

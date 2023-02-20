@@ -12,6 +12,10 @@ import PendingTestPage from './pages/PendingTestPage';
 import CompletedTestPage from './pages/CompletedTestPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 
+//
+import TestDashboardLayout from './layouts/testDashboard';
+import TestDashboard from './pages/TestDashboard';
+
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -27,6 +31,18 @@ export default function Router() {
         { path: 'completed-test', element: <CompletedTestPage /> },
         { path: 'test-result', element: <TestResultPage /> },
         { path: 'settings', element: <SettingsPage /> },
+        // { path: 'test', element: <TestDashboard /> },
+      ],
+    },
+    {
+      path: '/test',
+      element: <TestDashboardLayout />,
+      children: [
+        {
+          element: <Navigate to="/test/dashboard" />,
+          index: true,
+        },
+        { path: 'dashboard', element: <TestDashboard /> },
       ],
     },
     {

@@ -206,7 +206,7 @@ export default function PendingTestPage() {
 
                         <TableCell align="left">
                           <Button variant="contained" color="success">
-                            Add To Cart
+                            View
                           </Button>
                         </TableCell>
                       </TableRow>

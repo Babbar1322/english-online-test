@@ -28,7 +28,7 @@ export default function DashboardAppPage() {
     try {
       setLoading(true);
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/userDetails?token=${token}`);
-      // console.log(res.data);
+      console.log(res.data);
       if (res.status === 200) {
         dispatch(setLogin({ user: res.data }));
       }
@@ -40,10 +40,11 @@ export default function DashboardAppPage() {
   };
 
   useEffect(() => {
-    getUserDetails();
     // console.log(isLoggedIn, 'Logged IN');
     if (!isLoggedIn) {
       navigate('/login');
+    } else {
+      getUserDetails();
     }
   }, [isLoggedIn]);
 
@@ -65,34 +66,24 @@ export default function DashboardAppPage() {
 
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
-              <AppWidgetSummary
-                title="Test Attempted"
-                color="warning"
-                total={714000}
-                icon={'mdi:clipboard-edit-outline'}
-              />
+              <AppWidgetSummary title="Test Attempted" color="warning" total={7} icon={'mdi:clipboard-edit-outline'} />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
-              <AppWidgetSummary
-                title="Test Completed"
-                total={1352831}
-                color="info"
-                icon={'mdi:clipboard-check-outline'}
-              />
+              <AppWidgetSummary title="Test Completed" total={4} color="info" icon={'mdi:clipboard-check-outline'} />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
               <AppWidgetSummary
                 title="Test Correct"
-                total={1723315}
+                total={3}
                 color="success"
                 icon={'fluent:task-list-ltr-20-regular'}
               />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3}>
-              <AppWidgetSummary title="Available Test" total={234} icon={'mdi:clipboard-search-outline'} />
+              <AppWidgetSummary title="Available Test" total={25} icon={'mdi:clipboard-search-outline'} />
             </Grid>
 
             <Grid item xs={12} md={6} lg={8}>

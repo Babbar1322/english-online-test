@@ -2,6 +2,8 @@ import { forwardRef, useState } from 'react';
 // import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // @mui
 import { Stack, IconButton, InputAdornment, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
@@ -33,21 +35,32 @@ export default function LoginForm() {
 
   const handleClick = async () => {
     try {
+      // return;
       setLoading(true);
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
         email,
         password,
       });
-      console.log(res.data);
+      // console.log(res.data);
       if (res.status === 200) {
         dispatch(setToken(res.data.token));
         dispatch(setLogin({ user: null }));
         // navigate('/dashboard/login');
       }
-      // dispatch(setLogin());
     } catch (err) {
-      console.log(err);
+      // console.log(err.response.data.message);
       // alert(err);
+      toast('Login Failed!', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: false,
+        progress: undefined,
+        theme: 'light',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -56,6 +69,7 @@ export default function LoginForm() {
   return (
     <>
       <Stack spacing={3}>
+        <ToastContainer />
         <TextField name="email" label="Email address" onChange={handleEmail} defaultValue={email} />
 
         <TextField

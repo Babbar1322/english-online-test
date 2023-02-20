@@ -60,7 +60,7 @@ export default function LoginPage() {
   const mdUp = useResponsive('up', 'md');
 
   useEffect(() => {
-    console.log(window.location);
+    console.log(isLoggedIn);
     if (isLoggedIn) {
       navigate('/dashboard/app');
     }
