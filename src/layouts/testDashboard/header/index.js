@@ -24,7 +24,7 @@ function Header({ button, timer }) {
             <Iconify icon={button === 'home' ? 'mdi:home' : 'mdi:arrow-back'} width={30} />
           </IconButton>
           <Logo />
-          {timer && <Typography alignSelf={'center'}>{timer}</Typography>}
+          {timer && <Typography sx={{ textAlign: 'center' }}>{timer}</Typography>}
         </Toolbar>
       </Container>
     </AppBar>
