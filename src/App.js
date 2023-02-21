@@ -1,4 +1,5 @@
 // routes
+import { useEffect } from 'react';
 import Router from './routes';
 // theme
 import ThemeProvider from './theme';
@@ -9,6 +10,11 @@ import { StyledChart } from './components/chart';
 // ----------------------------------------------------------------------
 
 export default function App() {
+  useEffect(() => {
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+  }, []);
   return (
     <ThemeProvider>
       <ScrollToTop />

@@ -2,7 +2,22 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // @mui
 import { alpha } from '@mui/material/styles';
-import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
+import {
+  Box,
+  Divider,
+  Typography,
+  Stack,
+  MenuItem,
+  Avatar,
+  IconButton,
+  Popover,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from '@mui/material';
 // mocks_
 import account from '../../../_mock/account';
 import { selectUser, setLogout } from '../../../redux/slices/mainSlice';
@@ -28,6 +43,7 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
+  const [alertVisible, setAlertVisible] = useState(false);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
@@ -105,10 +121,22 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
+        <MenuItem onClick={() => setAlertVisible(true)} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </Popover>
+      <Dialog open={alertVisible} onClose={() => setAlertVisible(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Are you sure?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>You want to Logout?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAlertVisible(false)}>Cancel</Button>
+          <Button onClick={handleLogout} autoFocus>
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

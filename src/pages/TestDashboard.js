@@ -18,7 +18,7 @@ export default function TestDashboard() {
     <div>
       <Header button="home" />
       <H2>Practice Test Overview</H2>
-      <Stack direction="row" spacing={5} justifyContent="center">
+      <Grid container gap={5} columns={14} justifyContent="center">
         <Grid item md={4} padding={2} borderRadius={3} sx={{ boxShadow: 4 }}>
           <Typography align="center" sx={{ fontSize: '1.2rem' }}>
             Listening
@@ -73,10 +73,10 @@ export default function TestDashboard() {
             REVIEW
           </Button>
         </Grid>
-      </Stack>
+      </Grid>
 
-      <Stack direction="row" spacing={5} justifyContent="center" marginTop={3}>
-        <Grid item md={5} padding={2} borderRadius={3} sx={{ boxShadow: 4 }}>
+      <Grid container gap={5} columns={13} marginTop={3} justifyContent="center">
+        <Grid item md={6} padding={2} borderRadius={3} sx={{ boxShadow: 4 }}>
           <Typography align="center" sx={{ fontSize: '1.2rem' }}>
             Your Target
           </Typography>
@@ -115,7 +115,7 @@ export default function TestDashboard() {
         </Grid>
         <Grid
           item
-          md={5}
+          md={6}
           padding={2}
           borderRadius={3}
           sx={{ boxShadow: 4 }}
@@ -128,7 +128,7 @@ export default function TestDashboard() {
           <H2>ESOL Overview</H2>
           <Typography>How Listening, Reading and Writing section appear.</Typography>
         </Grid>
-      </Stack>
+      </Grid>
     </div>
   );
 }
