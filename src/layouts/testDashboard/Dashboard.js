@@ -12,13 +12,12 @@ const StyledRoot = styled('div')({
 });
 
 export default function Dashboard() {
-  const [button, setButton] = useState('');
   return (
     <StyledRoot>
       {/* <Header button={button} /> */}
 
       <Container>
-        <Outlet context={[button, setButton]} />
+        <Outlet />
       </Container>
     </StyledRoot>
   );

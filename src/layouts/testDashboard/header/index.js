@@ -1,23 +1,11 @@
 import { useState } from 'react';
-import {
-  AppBar,
-  Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-  Stack,
-  Toolbar,
-  Typography,
-} from '@mui/material';
+import { AppBar, Container, IconButton, Stack, Toolbar, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
 import Logo from './Logo';
 import Iconify from '../../../components/iconify';
+import Confirm from '../../../components/confirm';
 
 function Header({ button, timer }) {
   const navigate = useNavigate();
@@ -44,7 +32,7 @@ function Header({ button, timer }) {
               >
                 <Iconify icon={button === 'home' ? 'mdi:home' : 'mdi:arrow-back'} width={30} />
               </IconButton>
-              <Logo />
+              {/* <Logo /> */}
             </Stack>
             {timer && (
               <Stack direction="row">
@@ -56,18 +44,14 @@ function Header({ button, timer }) {
           </Toolbar>
         </Container>
       </AppBar>
-      <Dialog open={alertVisible} onClose={() => setAlertVisible(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Are you sure?</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">You Want to leave?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAlertVisible(false)}>Cancel</Button>
-          <Button onClick={() => navigate('/dashboard/app', { replace: true })} autoFocus>
-            Leave
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Confirm
+        mainButton="Leave"
+        onClose={() => setAlertVisible(false)}
+        onConfirm={() => navigate('/dashboard/app', { replace: true })}
+        text="You Want to leave?"
+        title="Are you sure?"
+        visible={alertVisible}
+      />
     </>
   );
 }

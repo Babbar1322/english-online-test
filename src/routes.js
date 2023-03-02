@@ -1,4 +1,5 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -16,12 +17,21 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import TestDashboardLayout from './layouts/testDashboard';
 import TestDashboard from './pages/TestDashboard';
 import ReadingTestPage from './pages/ReadingTestPage';
+import { selectIsLoggedIn } from './redux/slices/mainSlice';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const withAuth = (route) => {
+    return {
+      ...route,
+      element: <>{isLoggedIn ? route.element : <Navigate to="/login" replace />}</>,
+    };
+  };
+
   const routes = useRoutes([
-    {
+    withAuth({
       path: '/dashboard',
       element: <DashboardLayout />,
       children: [
@@ -34,8 +44,22 @@ export default function Router() {
         { path: 'settings', element: <SettingsPage /> },
         // { path: 'test', element: <TestDashboard /> },
       ],
-    },
-    {
+    }),
+    // {
+    //   path: '/dashboard',
+    //   element: <DashboardLayout />,
+    //   children: [
+    //     { element: <Navigate to="/dashboard/app" />, index: true },
+    //     { path: 'app', element: <DashboardAppPage /> },
+    //     { path: 'total-test', element: <TotalTestPage /> },
+    //     { path: 'pending-test', element: <PendingTestPage /> },
+    //     { path: 'completed-test', element: <CompletedTestPage /> },
+    //     { path: 'test-result', element: <TestResultPage /> },
+    //     { path: 'settings', element: <SettingsPage /> },
+    //     // { path: 'test', element: <TestDashboard /> },
+    //   ],
+    // },
+    withAuth({
       path: '/test',
       element: <TestDashboardLayout />,
       children: [
@@ -46,7 +70,7 @@ export default function Router() {
         { path: 'dashboard', element: <TestDashboard /> },
         { path: 'reading', element: <ReadingTestPage /> },
       ],
-    },
+    }),
     {
       path: 'login',
       element: <LoginPage />,

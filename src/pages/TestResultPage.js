@@ -154,9 +154,9 @@ export default function TestResultPage() {
   const isNotFound = !filteredUsers.length && !!filterName;
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
+    // if (!isLoggedIn) {
+    //   navigate('/login');
+    // }
   }, [isLoggedIn]);
 
   return (

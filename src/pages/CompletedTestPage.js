@@ -153,11 +153,11 @@ export default function CompletedTestPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   if (!isLoggedIn) {
+  //     navigate('/login');
+  //   }
+  // }, [isLoggedIn]);
 
   return (
     <>

@@ -26,9 +26,9 @@ export default function SettingsPage() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const navigate = useNavigate();
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
+    // if (!isLoggedIn) {
+    //   navigate('/login');
+    // }
   }, [isLoggedIn]);
   return (
     <>

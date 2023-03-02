@@ -2,25 +2,12 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // @mui
 import { alpha } from '@mui/material/styles';
-import {
-  Box,
-  Divider,
-  Typography,
-  Stack,
-  MenuItem,
-  Avatar,
-  IconButton,
-  Popover,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-} from '@mui/material';
+import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
 // mocks_
 import account from '../../../_mock/account';
-import { selectUser, setLogout } from '../../../redux/slices/mainSlice';
+import { selectToken, selectUser, setLogout } from '../../../redux/slices/mainSlice';
+import Confirm from '../../../components/confirm';
+import axios from '../../../components/axios';
 
 // ----------------------------------------------------------------------
 
@@ -45,14 +32,31 @@ export default function AccountPopover() {
   const [open, setOpen] = useState(null);
   const [alertVisible, setAlertVisible] = useState(false);
   const user = useSelector(selectUser);
+  const token = useSelector(selectToken);
   const dispatch = useDispatch();
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
 
-  const handleLogout = () => {
-    dispatch(setLogout());
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log(res.data);
+      if (res.status === 200) {
+        dispatch(setLogout());
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleClose = () => {
@@ -125,18 +129,14 @@ export default function AccountPopover() {
           Logout
         </MenuItem>
       </Popover>
-      <Dialog open={alertVisible} onClose={() => setAlertVisible(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Are you sure?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>You want to Logout?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAlertVisible(false)}>Cancel</Button>
-          <Button onClick={handleLogout} autoFocus>
-            Logout
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Confirm
+        mainButton="Logout"
+        onClose={() => setAlertVisible(false)}
+        onConfirm={handleLogout}
+        text="You Want to Logout?"
+        title="Are you sure?"
+        visible={alertVisible}
+      />
     </>
   );
 }

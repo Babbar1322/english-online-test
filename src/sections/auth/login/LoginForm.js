@@ -1,7 +1,6 @@
-import { forwardRef, useState } from 'react';
+import { useState } from 'react';
 // import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // @mui
@@ -10,6 +9,7 @@ import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 import { setLogin, setToken } from '../../../redux/slices/mainSlice';
+import axios from '../../../components/axios';
 
 // ----------------------------------------------------------------------
 
@@ -44,13 +44,13 @@ export default function LoginForm() {
       // console.log(res.data);
       if (res.status === 200) {
         dispatch(setToken(res.data.token));
-        dispatch(setLogin({ user: null }));
+        dispatch(setLogin({ user: res.data.user }));
         // navigate('/dashboard/login');
       }
     } catch (err) {
-      // console.log(err.response.data.message);
+      // console.log(err.response.statusText);
       // alert(err);
-      toast('Login Failed!', {
+      toast(err.response.statusText, {
         position: 'top-right',
         autoClose: 5000,
         hideProgressBar: false,
