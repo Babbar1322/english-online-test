@@ -33,24 +33,24 @@ export default function ReadingTestPage() {
 
     // The state for our timer
     const [timer, setTimer] = useState('00:00:00');
-    const [questionValues, setQuestionValues] = useState([]);
+    // const [questionValues, setQuestionValues] = useState([]);
 
-    const handleInputChange = (event, number) => {
-        const { name, value, type, checked } = event.target;
+    // const handleInputChange = (event, number) => {
+    //     const { name, value, type, checked } = event.target;
 
-        setQuestionValues((prevData) => {
-            const newData = [...prevData];
-            const index = newData.findIndex((item) => item.number === number);
+    //     setQuestionValues((prevData) => {
+    //         const newData = [...prevData];
+    //         const index = newData.findIndex((item) => item.number === number);
 
-            if (index === -1) {
-                newData.push({ number, [name]: type === 'checkbox' ? checked : value });
-            } else {
-                newData[index][name] = type === 'checkbox' ? checked : value;
-            }
+    //         if (index === -1) {
+    //             newData.push({ number, [name]: type === 'checkbox' ? checked : value });
+    //         } else {
+    //             newData[index][name] = type === 'checkbox' ? checked : value;
+    //         }
 
-            return newData;
-        });
-    };
+    //         return newData;
+    //     });
+    // };
 
     const getTimeRemaining = (e) => {
         const total = Date.parse(e) - Date.parse(new Date());
@@ -158,12 +158,6 @@ export default function ReadingTestPage() {
                                                                 {JSON.parse(question.question_hint).map((hint) => (
                                                                     <FormControlLabel
                                                                         value={hint}
-                                                                        onChange={(e) =>
-                                                                            handleInputChange(
-                                                                                question.question_number,
-                                                                                e.target.value
-                                                                            )
-                                                                        }
                                                                         control={<Radio />}
                                                                         label={hint}
                                                                     />
@@ -180,15 +174,7 @@ export default function ReadingTestPage() {
                                                             <strong>{question.question_number}.</strong>{' '}
                                                             {question.question}
                                                         </Typography>
-                                                        <FormGroup
-                                                            sx={{ ml: 4 }}
-                                                            onChange={(e) =>
-                                                                handleInputChange(
-                                                                    question.question_number,
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                        >
+                                                        <FormGroup sx={{ ml: 4 }}>
                                                             {JSON.parse(question.question_hint).map((hint) => (
                                                                 <FormControlLabel
                                                                     value={hint}
@@ -210,12 +196,6 @@ export default function ReadingTestPage() {
                                                         <FormGroup sx={{ ml: 4 }}>
                                                             <TextField
                                                                 type={'text'}
-                                                                onChange={(e) =>
-                                                                    handleInputChange(
-                                                                        question.question_number,
-                                                                        e.target.value
-                                                                    )
-                                                                }
                                                                 label={question.question_number}
                                                                 variant="outlined"
                                                             />
