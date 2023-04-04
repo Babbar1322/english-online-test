@@ -18,39 +18,69 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from '../layouts/testDashboard/header';
 import Scrollbar from '../components/scrollbar';
 import Iconify from '../components/iconify';
-import { selectToken } from '../redux/slices/mainSlice';
+import { selectToken, selectUser } from '../redux/slices/mainSlice';
 
 export default function ReadingTestPage() {
     const Ref = useRef(null);
     const token = useSelector(selectToken);
+    const user = useSelector(selectUser);
     const [testData, setTestData] = useState({});
     const { state } = useLocation();
+    const navigate = useNavigate();
     // console.log(state);
 
     // The state for our timer
     const [timer, setTimer] = useState('00:00:00');
-    // const [questionValues, setQuestionValues] = useState([]);
+    const [questionValues, setQuestionValues] = useState({});
+    // console.log(questionValues);
 
-    // const handleInputChange = (event, number) => {
-    //     const { name, value, type, checked } = event.target;
-
-    //     setQuestionValues((prevData) => {
-    //         const newData = [...prevData];
-    //         const index = newData.findIndex((item) => item.number === number);
-
-    //         if (index === -1) {
-    //             newData.push({ number, [name]: type === 'checkbox' ? checked : value });
-    //         } else {
-    //             newData[index][name] = type === 'checkbox' ? checked : value;
-    //         }
-
-    //         return newData;
-    //     });
-    // };
+    const handleChange = (e, question) => {
+        if (e.target.type === 'checkbox') {
+            // console.log(e.target.value);
+            setQuestionValues((prevState) => {
+                return {
+                    ...prevState,
+                    // [question_number]: { ...prevState[question_number], [e.target.value]: e.target.checked, question_id: question.id, question_type: question.question_type },
+                    [question.question_number]: {
+                        value: { ...prevState[question.question_number]?.value, [e.target.value]: e.target.checked },
+                        question_id: question.id,
+                        question_type: question.question_type,
+                    },
+                };
+            });
+        }
+        if (e.target.type === 'text') {
+            setQuestionValues((prevState) => {
+                return {
+                    ...prevState,
+                    [question.question_number]: {
+                        value: e.target.value,
+                        question_id: question.id,
+                        question_type: question.question_type,
+                    },
+                };
+            });
+        }
+        if (e.target.type === 'radio') {
+            setQuestionValues((prevState) => {
+                return {
+                    ...prevState,
+                    [question.question_number]: {
+                        value: e.target.value,
+                        question_id: question.id,
+                        question_type: question.question_type,
+                    },
+                };
+            });
+        }
+        console.log(questionValues);
+    };
 
     const getTimeRemaining = (e) => {
         const total = Date.parse(e) - Date.parse(new Date());
@@ -100,13 +130,56 @@ export default function ReadingTestPage() {
                 },
             });
 
-            //   console.log(res.data);
+            // console.log(res.data);
             setTestData(res.data);
             clearTimer(getDeadTime(res.data.time));
         } catch (err) {
             console.log(err);
         }
     };
+
+    async function handleSubmit() {
+        try {
+            const res = await axios.post(
+                `${process.env.REACT_APP_API_URL}/submit-test`,
+                {
+                    questionValues,
+                    test_id: state?.id,
+                    user_id: user.id,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            // console.log(res.data);
+            if (res.status === 200) {
+                navigate('/test/review-test', {
+                    state: {
+                        id: state?.id,
+                    },
+                });
+            }
+        } catch (err) {
+            toast(err.response.data, {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: false,
+                progress: undefined,
+                theme: 'light',
+                type: 'error',
+            });
+            navigate('/test/review-test', {
+                state: {
+                    id: state?.id,
+                },
+            });
+        }
+    }
     useEffect(() => {
         if (state?.id) {
             getTestData();
@@ -117,100 +190,120 @@ export default function ReadingTestPage() {
             if (Ref.current) clearInterval(Ref.current);
         };
     }, []);
-
-    const onClickReset = () => {
-        clearTimer(getDeadTime());
-    };
     return (
         <div>
+            <ToastContainer />
             <Header button="back" timer={timer} />
             <Scrollbar sx={{ maxHeight: '70vh' }}>
                 {testData?.test_groups?.map((item, index) => (
-                    <Grid container gap={3} columns={13}>
-                        <Grid item md={6}>
-                            <Box component="div" bgcolor={'white'} padding={2}>
-                                <h4>{item.group_name}</h4>
-                                <p>{item.group_content}</p>
-                            </Box>
-                        </Grid>
-                        <Grid item md={6}>
-                            <Scrollbar>
-                                <div>
-                                    {/* {testData?.test_groups?.map((item, index) => ( */}
-                                    <>
-                                        <h4>{`Questions of ${item.group_name}`}</h4>
-                                        {item.test_questions.map((question, index) => {
-                                            if (question.question_type === 'single_choice') {
-                                                return (
-                                                    <Accordion sx={{ maxWidth: 550 }} id={question.question_number}>
-                                                        <AccordionSummary
-                                                            expandIcon={<Iconify icon="mdi:expand-more" />}
-                                                            aria-controls="panel1a-content"
-                                                            id="panel1a-header"
-                                                        >
-                                                            <Typography>
-                                                                <strong>{question.question_number}.</strong>{' '}
-                                                                {question.question}
-                                                            </Typography>
-                                                        </AccordionSummary>
-                                                        <AccordionDetails sx={{ ml: 4 }}>
-                                                            <RadioGroup>
-                                                                {JSON.parse(question.question_hint).map((hint) => (
-                                                                    <FormControlLabel
-                                                                        value={hint}
-                                                                        control={<Radio />}
-                                                                        label={hint}
+                    <Accordion id={index} defaultExpanded={index === 0} key={index}>
+                        <AccordionSummary
+                            expandIcon={<Iconify icon="mdi:expand-more" />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Typography>
+                                <strong>{item.group_name}</strong>
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ ml: 4 }}>
+                            <Grid container gap={3} columns={13}>
+                                <Grid item md={6}>
+                                    <Box component="div" bgcolor={'white'} padding={2}>
+                                        <h4>{item.group_name}</h4>
+                                        <p>{item.group_content}</p>
+                                    </Box>
+                                </Grid>
+                                <Grid item md={6}>
+                                    <Scrollbar>
+                                        <div>
+                                            {/* {testData?.test_groups?.map((item, index) => ( */}
+                                            <>
+                                                <h4>{`Questions of ${item.group_name}`}</h4>
+                                                {item.test_questions.map((question, index) => {
+                                                    if (question.question_type === 'single_choice') {
+                                                        return (
+                                                            <Accordion
+                                                                sx={{ maxWidth: 550 }}
+                                                                id={question.question_number}
+                                                            >
+                                                                <AccordionSummary
+                                                                    expandIcon={<Iconify icon="mdi:expand-more" />}
+                                                                    aria-controls="panel1a-content"
+                                                                    id="panel1a-header"
+                                                                >
+                                                                    <Typography>
+                                                                        <strong>{question.question_number}.</strong>{' '}
+                                                                        {question.question}
+                                                                    </Typography>
+                                                                </AccordionSummary>
+                                                                <AccordionDetails sx={{ ml: 4 }}>
+                                                                    <RadioGroup>
+                                                                        {JSON.parse(question.question_hint).map(
+                                                                            (hint) => (
+                                                                                <FormControlLabel
+                                                                                    value={hint}
+                                                                                    onChange={(e) =>
+                                                                                        handleChange(e, question)
+                                                                                    }
+                                                                                    control={<Radio />}
+                                                                                    label={hint}
+                                                                                />
+                                                                            )
+                                                                        )}
+                                                                    </RadioGroup>
+                                                                </AccordionDetails>
+                                                            </Accordion>
+                                                        );
+                                                    }
+                                                    if (question.question_type === 'multi_choice') {
+                                                        return (
+                                                            <>
+                                                                <Typography id={question.question_number}>
+                                                                    <strong>{question.question_number}.</strong>{' '}
+                                                                    {question.question}
+                                                                </Typography>
+                                                                <FormGroup sx={{ ml: 4 }}>
+                                                                    {JSON.parse(question.question_hint).map((hint) => (
+                                                                        <FormControlLabel
+                                                                            value={hint}
+                                                                            onChange={(e) => handleChange(e, question)}
+                                                                            control={<Checkbox />}
+                                                                            label={hint}
+                                                                        />
+                                                                    ))}
+                                                                </FormGroup>
+                                                            </>
+                                                        );
+                                                    }
+                                                    if (question.question_type === 'input') {
+                                                        return (
+                                                            <>
+                                                                <Typography id={question.question_number}>
+                                                                    <strong>{question.question_number}.</strong>{' '}
+                                                                    {question.question}
+                                                                </Typography>
+                                                                <FormGroup sx={{ ml: 4 }}>
+                                                                    <TextField
+                                                                        type={'text'}
+                                                                        onChange={(e) => handleChange(e, question)}
+                                                                        label={question.question_number}
+                                                                        variant="outlined"
                                                                     />
-                                                                ))}
-                                                            </RadioGroup>
-                                                        </AccordionDetails>
-                                                    </Accordion>
-                                                );
-                                            }
-                                            if (question.question_type === 'multi_choice') {
-                                                return (
-                                                    <>
-                                                        <Typography id={question.question_number}>
-                                                            <strong>{question.question_number}.</strong>{' '}
-                                                            {question.question}
-                                                        </Typography>
-                                                        <FormGroup sx={{ ml: 4 }}>
-                                                            {JSON.parse(question.question_hint).map((hint) => (
-                                                                <FormControlLabel
-                                                                    value={hint}
-                                                                    control={<Checkbox />}
-                                                                    label={hint}
-                                                                />
-                                                            ))}
-                                                        </FormGroup>
-                                                    </>
-                                                );
-                                            }
-                                            if (question.question_type === 'input') {
-                                                return (
-                                                    <>
-                                                        <Typography id={question.question_number}>
-                                                            <strong>{question.question_number}.</strong>{' '}
-                                                            {question.question}
-                                                        </Typography>
-                                                        <FormGroup sx={{ ml: 4 }}>
-                                                            <TextField
-                                                                type={'text'}
-                                                                label={question.question_number}
-                                                                variant="outlined"
-                                                            />
-                                                        </FormGroup>
-                                                    </>
-                                                );
-                                            }
-                                            return false;
-                                        })}
-                                    </>
-                                    {/* ))} */}
-                                </div>
-                            </Scrollbar>
-                        </Grid>
-                    </Grid>
+                                                                </FormGroup>
+                                                            </>
+                                                        );
+                                                    }
+                                                    return false;
+                                                })}
+                                            </>
+                                            {/* ))} */}
+                                        </div>
+                                    </Scrollbar>
+                                </Grid>
+                            </Grid>
+                        </AccordionDetails>
+                    </Accordion>
                 ))}
             </Scrollbar>
             <div
@@ -225,7 +318,7 @@ export default function ReadingTestPage() {
                 }}
             >
                 <Grid container alignItems={'center'}>
-                    <Grid sm={11} item>
+                    <Grid sm={10} item>
                         {testData?.test_groups?.map((item, index) => (
                             <>
                                 <Grid container paddingX={1} columns={16} columnSpacing={1} marginY={0.4}>
@@ -251,9 +344,14 @@ export default function ReadingTestPage() {
                             </>
                         ))}
                     </Grid>
-                    <Grid sm={1} item>
-                        <Button variant="contained" color="primary" sx={{ borderRadius: 10, px: 0 }}>
-                            <Iconify icon="material-symbols:chevron-right" width={40} />
+                    <Grid sm={2} item>
+                        <Button
+                            variant="contained"
+                            onClick={() => handleSubmit()}
+                            color="primary"
+                            sx={{ borderRadius: 10 }}
+                        >
+                            Submit Test
                         </Button>
                     </Grid>
                 </Grid>

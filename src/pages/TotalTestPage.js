@@ -1,32 +1,30 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
-  Card,
-  Table,
-  Stack,
-  Paper,
-  Avatar,
-  Button,
-  Popover,
-  Checkbox,
-  TableRow,
-  MenuItem,
-  TableBody,
-  TableCell,
-  // Container,
-  Typography,
-  IconButton,
-  TableContainer,
-  TablePagination,
-  LinearProgress,
+    Card,
+    Table,
+    Stack,
+    Paper,
+    Button,
+    TableRow,
+    TableBody,
+    TableCell,
+    // Container,
+    Typography,
+    TableContainer,
+    TablePagination,
+    Backdrop,
+    CircularProgress,
+    Box,
 } from '@mui/material';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // components
-import { selectToken } from '../redux/slices/mainSlice';
-import Iconify from '../components/iconify';
+import { selectToken, selectUser } from '../redux/slices/mainSlice';
 import Scrollbar from '../components/scrollbar';
 import Container from '../layouts/dashboard/container/Container';
 import axios from '../components/axios';
@@ -38,244 +36,299 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'test-id', label: 'Test ID', alignRight: false },
-  { id: 'test-name', label: 'Test Name', alignRight: false },
-  { id: 'date', label: 'Date', alignRight: false },
-  { id: 'total-question', label: 'Total Questions', alignRight: false },
-  { id: 'view', label: 'View', alignRight: false },
+    { id: 'test-id', label: 'Test ID', alignRight: false },
+    { id: 'test-name', label: 'Test Name', alignRight: false },
+    { id: 'date', label: 'Date', alignRight: false },
+    { id: 'total-question', label: 'Total Questions', alignRight: false },
+    { id: 'view', label: 'View', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
+    if (b[orderBy] < a[orderBy]) {
+        return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+        return 1;
+    }
+    return 0;
 }
 
 function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    return order === 'desc'
+        ? (a, b) => descendingComparator(a, b, orderBy)
+        : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
 function applySortFilter(array, comparator, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }
-  return stabilizedThis.map((el) => el[0]);
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+        const order = comparator(a[0], b[0]);
+        if (order !== 0) return order;
+        return a[1] - b[1];
+    });
+    if (query) {
+        return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    }
+    return stabilizedThis.map((el) => el[0]);
 }
 
 export default function TotalTestPage() {
-  const [open, setOpen] = useState(null);
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('name');
-  const [filterName, setFilterName] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('name');
+    const [filterName, setFilterName] = useState('');
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [loading, setLoading] = useState(true);
+    const [testLoading, setTestLoading] = useState(false);
+    const [data, setData] = useState([]);
 
-  const token = useSelector(selectToken);
+    const token = useSelector(selectToken);
+    const user = useSelector(selectUser);
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const handleCloseMenu = () => {
-    setOpen(null);
-  };
+    const handleRequestSort = (event, property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
 
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+    const getAllTest = async () => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-all-test?user_id=${user.id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            // console.log(res.data);
+            setData(res.data);
+        } catch (e) {
+            console.log(e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const getAllTest = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-all-test`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // console.log(res.data);
-      setData(res.data);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const takeTest = async (test_id) => {
+        try {
+            const res = await axios.post(
+                `${process.env.REACT_APP_API_URL}/take-test`,
+                {
+                    test_id,
+                    user_id: user.id,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+            // console.log(res.data);
+            if (res.status === 200) {
+                setTestLoading(false);
+                navigate('/test/reading', { state: { id: res.data } });
+            }
+        } catch (err) {
+            // console.log(err);
+            // alert(err.response.data);
+            // toast(err.response.data, {
+            //     position: 'top-right',
+            //     autoClose: 5000,
+            //     hideProgressBar: false,
+            //     closeOnClick: false,
+            //     pauseOnHover: true,
+            //     draggable: false,
+            //     progress: undefined,
+            //     theme: 'light',
+            //     type: 'error',
+            // });
+        }
+    };
 
-  const handleChangeRowsPerPage = (event) => {
-    setPage(0);
-    setRowsPerPage(parseInt(event.target.value, 10));
-  };
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
 
-  const handleFilterByName = (event) => {
-    setPage(0);
-    setFilterName(event.target.value);
-  };
+    const handleChangeRowsPerPage = (event) => {
+        setPage(0);
+        setRowsPerPage(parseInt(event.target.value, 10));
+    };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
+    const handleFilterByName = (event) => {
+        setPage(0);
+        setFilterName(event.target.value);
+    };
 
-  const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+    const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
-  useEffect(() => {
-    getAllTest();
-  }, []);
+    const isNotFound = !filteredUsers.length && !!filterName;
 
-  return (
-    <>
-      <Helmet>
-        <title> Total Test | ESOL IELTS </title>
-      </Helmet>
+    useEffect(() => {
+        getAllTest();
+    }, []);
 
-      <Container>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Total Test
-          </Typography>
-        </Stack>
+    return (
+        <>
+            <Helmet>
+                <title> Total Test | ESOL IELTS </title>
+            </Helmet>
+            <ToastContainer />
 
-        <Card>
-          <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
+            <Container>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+                    <Typography variant="h4" gutterBottom>
+                        Total Test
+                    </Typography>
+                </Stack>
 
-          <Scrollbar>
-            {loading ? (
-              <div>Loading...</div>
-            ) : (
-              <TableContainer sx={{ minWidth: 800 }}>
-                <Table>
-                  <UserListHead
-                    order={order}
-                    orderBy={orderBy}
-                    headLabel={TABLE_HEAD}
-                    rowCount={data.length}
-                    onRequestSort={handleRequestSort}
-                  />
-                  <TableBody>
-                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                      const { id, test_name, created_at, totalQuestions } = row;
+                <Card>
+                    <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
 
-                      return (
-                        <TableRow hover key={id}>
-                          <TableCell component="th" scope="row" padding="normal">
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                              <Typography variant="subtitle2" noWrap>
-                                {id}
-                              </Typography>
-                            </Stack>
-                          </TableCell>
+                    <Scrollbar>
+                        {loading ? (
+                            <Box textAlign={'center'} py={2}>
+                                <CircularProgress />
+                            </Box>
+                        ) : data.length <= 0 ? (
+                            <Box py={2}>
+                                <Typography component={'h2'} textAlign="center">
+                                    No Data Found!!
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <TableContainer sx={{ minWidth: 800 }}>
+                                <Table>
+                                    <UserListHead
+                                        order={order}
+                                        orderBy={orderBy}
+                                        headLabel={TABLE_HEAD}
+                                        rowCount={data.length}
+                                        onRequestSort={handleRequestSort}
+                                    />
+                                    <TableBody>
+                                        {filteredUsers
+                                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                            .map((row) => {
+                                                const { id, test_name, created_at, is_taken, total_questions } = row;
 
-                          <TableCell align="left">{test_name}</TableCell>
+                                                return (
+                                                    <TableRow hover key={id}>
+                                                        <TableCell component="th" scope="row" padding="normal">
+                                                            <Stack direction="row" alignItems="center" spacing={2}>
+                                                                <Typography variant="subtitle2" noWrap>
+                                                                    {id}
+                                                                </Typography>
+                                                            </Stack>
+                                                        </TableCell>
 
-                          <TableCell align="left">{created_at}</TableCell>
+                                                        <TableCell align="left">{test_name}</TableCell>
 
-                          <TableCell align="left">{totalQuestions}</TableCell>
+                                                        <TableCell align="left">{created_at}</TableCell>
 
-                          <TableCell align="left">
-                            <Button
-                              variant="contained"
-                              color="success"
-                              onClick={() => navigate('/test/reading', { state: { id } })}
-                            >
-                              Take Test
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                    {emptyRows > 0 && (
-                      <TableRow style={{ height: 53 * emptyRows }}>
-                        <TableCell colSpan={6} />
-                      </TableRow>
-                    )}
-                  </TableBody>
+                                                        <TableCell align="left">{total_questions}</TableCell>
 
-                  {isNotFound && (
-                    <TableBody>
-                      <TableRow>
-                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                          <Paper
-                            sx={{
-                              textAlign: 'center',
-                            }}
-                          >
-                            <Typography variant="h6" paragraph>
-                              Not found
-                            </Typography>
+                                                        <TableCell align="left">
+                                                            {is_taken ? (
+                                                                <Button
+                                                                    variant="contained"
+                                                                    color="info"
+                                                                    sx={{ ml: 1 }}
+                                                                    onClick={() =>
+                                                                        navigate('/test/review-test', {
+                                                                            state: { id },
+                                                                        })
+                                                                    }
+                                                                >
+                                                                    Preview
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    variant="contained"
+                                                                    color="success"
+                                                                    sx={{ color: '#fff' }}
+                                                                    disabled={testLoading}
+                                                                    onClick={() => {
+                                                                        toast.promise(
+                                                                            () => takeTest(id),
+                                                                            {
+                                                                                pending: 'Allocating Test...',
+                                                                                success: 'Test Successfully Allocated',
+                                                                                error: 'Test Already Taken by You!',
+                                                                            },
+                                                                            {
+                                                                                position: 'top-right',
+                                                                                autoClose: 5000,
+                                                                                hideProgressBar: false,
+                                                                                closeOnClick: false,
+                                                                                pauseOnHover: true,
+                                                                                draggable: false,
+                                                                                progress: undefined,
+                                                                                theme: 'light',
+                                                                                type: 'error',
+                                                                            }
+                                                                        );
+                                                                        setTestLoading(true);
+                                                                        // takeTest(id);
+                                                                    }}
+                                                                >
+                                                                    Take Test
+                                                                </Button>
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        {emptyRows > 0 && (
+                                            <TableRow style={{ height: 53 * emptyRows }}>
+                                                <TableCell colSpan={6} />
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
 
-                            <Typography variant="body2">
-                              No results found for &nbsp;
-                              <strong>&quot;{filterName}&quot;</strong>.
-                              <br /> Try checking for typos or using complete words.
-                            </Typography>
-                          </Paper>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  )}
-                </Table>
-              </TableContainer>
-            )}
-          </Scrollbar>
+                                    {isNotFound && (
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                                    <Paper
+                                                        sx={{
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        <Typography variant="h6" paragraph>
+                                                            Not found
+                                                        </Typography>
 
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={data.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Card>
-      </Container>
+                                                        <Typography variant="body2">
+                                                            No results found for &nbsp;
+                                                            <strong>&quot;{filterName}&quot;</strong>.
+                                                            <br /> Try checking for typos or using complete words.
+                                                        </Typography>
+                                                    </Paper>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    )}
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </Scrollbar>
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
-    </>
-  );
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={data.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </Card>
+            </Container>
+        </>
+    );
 }

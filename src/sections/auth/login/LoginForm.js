@@ -14,100 +14,100 @@ import axios from '../../../components/axios';
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
-  const dispatch = useDispatch();
-  // const navigate = useNavigate();
+    const dispatch = useDispatch();
+    // const navigate = useNavigate();
 
-  // const NavLink = forwardRef((props, ref) => <RouterLink ref={ref} {...props} />);
+    // const NavLink = forwardRef((props, ref) => <RouterLink ref={ref} {...props} />);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-  const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-  const handleEmail = (e) => {
-    setEmail(e.target.value);
-  };
-  const handlePassword = (e) => {
-    setPassword(e.target.value);
-  };
+    const handleEmail = (e) => {
+        setEmail(e.target.value);
+    };
+    const handlePassword = (e) => {
+        setPassword(e.target.value);
+    };
 
-  const handleClick = async () => {
-    try {
-      // return;
-      setLoading(true);
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
-        email,
-        password,
-      });
-      // console.log(res.data);
-      if (res.status === 200) {
-        dispatch(setToken(res.data.token));
-        dispatch(setLogin({ user: res.data.user }));
-        // navigate('/dashboard/login');
-      }
-    } catch (err) {
-      // console.log(err.response.statusText);
-      // alert(err);
-      toast(err.response.statusText, {
-        position: 'top-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: false,
-        progress: undefined,
-        theme: 'light',
-        type: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleClick = async () => {
+        try {
+            // return;
+            setLoading(true);
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
+                email,
+                password,
+            });
+            // console.log(res.data);
+            if (res.status === 200) {
+                dispatch(setToken(res.data.token));
+                dispatch(setLogin({ user: res.data.user }));
+                // navigate('/dashboard/login');
+            }
+        } catch (err) {
+            console.log(err.response.data.error);
+            // alert(err);
+            toast(err.response.data.error, {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: false,
+                progress: undefined,
+                theme: 'light',
+                type: 'error',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <>
-      <Stack spacing={3}>
-        <ToastContainer />
-        <TextField name="email" label="Email address" onChange={handleEmail} defaultValue={email} />
+    return (
+        <>
+            <Stack spacing={3}>
+                <ToastContainer />
+                <TextField name="email" label="Email address" onChange={handleEmail} defaultValue={email} />
 
-        <TextField
-          name="password"
-          label="Password"
-          onChange={handlePassword}
-          defaultValue={password}
-          type={showPassword ? 'text' : 'password'}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                  <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Stack>
+                <TextField
+                    name="password"
+                    label="Password"
+                    onChange={handlePassword}
+                    defaultValue={password}
+                    type={showPassword ? 'text' : 'password'}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                    <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+            </Stack>
 
-      {/* <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
+            {/* <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
         <Checkbox name="remember" title="Remember Me" />
         <Link component={NavLink} variant="subtitle2" underline="hover" to="/">
           Forgot password?
         </Link>
       </Stack> */}
 
-      <LoadingButton
-        loading={loading}
-        fullWidth
-        size="large"
-        sx={{ mt: 3 }}
-        type="submit"
-        variant="contained"
-        onClick={handleClick}
-      >
-        Login
-      </LoadingButton>
-    </>
-  );
+            <LoadingButton
+                loading={loading}
+                fullWidth
+                size="large"
+                sx={{ mt: 3 }}
+                type="submit"
+                variant="contained"
+                onClick={handleClick}
+            >
+                Login
+            </LoadingButton>
+        </>
+    );
 }
