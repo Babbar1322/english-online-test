@@ -147,7 +147,8 @@ export default function ReadingTestPage() {
                                     <Grid item md={6}>
                                         <Box component="div" bgcolor={'white'} padding={2}>
                                             <h4>{item.group_name}</h4>
-                                            <p>{item.group_content}</p>
+                                            {/* <p>{item.group_content}</p> */}
+                                            <div dangerouslySetInnerHTML={{ __html: item.group_content }}></div>
                                         </Box>
                                     </Grid>
                                     <Grid item md={6}>
@@ -241,6 +242,26 @@ export default function ReadingTestPage() {
                                                                             variant="outlined"
                                                                         />
                                                                     </FormGroup>
+                                                                </>
+                                                            );
+                                                        }
+                                                        if (question.question_type === 'drag_and_drop') {
+                                                            return (
+                                                                <>
+                                                                    <Typography id={question.question_number}>
+                                                                        <strong>{question.question_number}.</strong>{' '}
+                                                                        {question.question}
+                                                                    </Typography>
+                                                                    <div
+                                                                        style={{
+                                                                            minHeight: 40,
+                                                                            padding: 5,
+                                                                            border: '1px solid #666',
+                                                                            borderRadius: 5,
+                                                                        }}
+                                                                    >
+                                                                        {question.user_answer}
+                                                                    </div>
                                                                 </>
                                                             );
                                                         }

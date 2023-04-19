@@ -111,7 +111,7 @@ export default function TotalTestPage() {
         }
     };
 
-    const takeTest = async (test_id) => {
+    const takeTest = async (test_id, test_type) => {
         try {
             const res = await axios.post(
                 `${process.env.REACT_APP_API_URL}/take-test`,
@@ -129,7 +129,11 @@ export default function TotalTestPage() {
             // console.log(res.data);
             if (res.status === 200) {
                 setTestLoading(false);
-                navigate('/test/reading', { state: { id: res.data } });
+                if (test_type === 'writing') {
+                    navigate('/test/writing', { state: { id: res.data } });
+                } else {
+                    navigate('/test/reading', { state: { id: res.data } });
+                }
             }
         } catch (err) {
             // console.log(err);
@@ -214,7 +218,14 @@ export default function TotalTestPage() {
                                         {filteredUsers
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row) => {
-                                                const { id, test_name, created_at, is_taken, total_questions } = row;
+                                                const {
+                                                    id,
+                                                    test_name,
+                                                    test_type,
+                                                    created_at,
+                                                    is_taken,
+                                                    total_questions,
+                                                } = row;
 
                                                 return (
                                                     <TableRow hover key={id}>
@@ -254,7 +265,7 @@ export default function TotalTestPage() {
                                                                     disabled={testLoading}
                                                                     onClick={() => {
                                                                         toast.promise(
-                                                                            () => takeTest(id),
+                                                                            () => takeTest(id, test_type),
                                                                             {
                                                                                 pending: 'Allocating Test...',
                                                                                 success: 'Test Successfully Allocated',

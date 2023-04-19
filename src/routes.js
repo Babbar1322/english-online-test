@@ -18,7 +18,9 @@ import ReviewTest from './pages/ReviewTest';
 import TestDashboardLayout from './layouts/testDashboard';
 import TestDashboard from './pages/TestDashboard';
 import ReadingTestPage from './pages/ReadingTestPage';
+import WritingTestPage from './pages/WritingTestPage';
 import { selectIsLoggedIn } from './redux/slices/mainSlice';
+import WritingTestReview from './pages/WritingTestReview';
 
 // ----------------------------------------------------------------------
 
@@ -68,7 +70,9 @@ export default function Router() {
                 },
                 { path: 'dashboard', element: <TestDashboard /> },
                 { path: 'reading', element: <ReadingTestPage /> },
+                { path: 'writing', element: <WritingTestPage /> },
                 { path: 'review-test', element: <ReviewTest /> },
+                { path: 'review-writing-test', element: <WritingTestReview /> },
             ],
         }),
         {

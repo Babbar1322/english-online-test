@@ -14,7 +14,6 @@ import {
     TextField,
     Button,
     Link,
-    IconButton,
 } from '@mui/material';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -33,51 +32,41 @@ export default function ReadingTestPage() {
     const [testData, setTestData] = useState({});
     const { state } = useLocation();
     const navigate = useNavigate();
-    // console.log(state);
 
     // The state for our timer
     const [timer, setTimer] = useState('00:00:00');
     const [questionValues, setQuestionValues] = useState({});
-    // console.log(questionValues);
 
     const handleChange = (e, question) => {
         if (e.target.type === 'checkbox') {
-            // console.log(e.target.value);
-            setQuestionValues((prevState) => {
-                return {
-                    ...prevState,
-                    // [question_number]: { ...prevState[question_number], [e.target.value]: e.target.checked, question_id: question.id, question_type: question.question_type },
-                    [question.question_number]: {
-                        value: { ...prevState[question.question_number]?.value, [e.target.value]: e.target.checked },
-                        question_id: question.id,
-                        question_type: question.question_type,
-                    },
-                };
-            });
+            setQuestionValues((prevState) => ({
+                ...prevState,
+                [question.question_number]: {
+                    value: { ...prevState[question.question_number]?.value, [e.target.value]: e.target.checked },
+                    question_id: question.id,
+                    question_type: question.question_type,
+                },
+            }));
         }
         if (e.target.type === 'text') {
-            setQuestionValues((prevState) => {
-                return {
-                    ...prevState,
-                    [question.question_number]: {
-                        value: e.target.value,
-                        question_id: question.id,
-                        question_type: question.question_type,
-                    },
-                };
-            });
+            setQuestionValues((prevState) => ({
+                ...prevState,
+                [question.question_number]: {
+                    value: e.target.value,
+                    question_id: question.id,
+                    question_type: question.question_type,
+                },
+            }));
         }
         if (e.target.type === 'radio') {
-            setQuestionValues((prevState) => {
-                return {
-                    ...prevState,
-                    [question.question_number]: {
-                        value: e.target.value,
-                        question_id: question.id,
-                        question_type: question.question_type,
-                    },
-                };
-            });
+            setQuestionValues((prevState) => ({
+                ...prevState,
+                [question.question_number]: {
+                    value: e.target.value,
+                    question_id: question.id,
+                    question_type: question.question_type,
+                },
+            }));
         }
         console.log(questionValues);
     };
@@ -93,6 +82,67 @@ export default function ReadingTestPage() {
             minutes,
             seconds,
         };
+    };
+    const drop = (e, question) => {
+        e.preventDefault();
+        console.log(questionValues);
+        const data = e.dataTransfer.getData('text');
+        const droppedElement = document.getElementById(data);
+        const droppedText = droppedElement.textContent;
+        e.target.appendChild(document.getElementById(data));
+
+        setQuestionValues((prevState) => {
+            if (Object.keys(prevState).length > 0) {
+                console.log('Heelllloooo');
+                for (const val in prevState) {
+                    console.log(prevState[val]);
+                    if (prevState[val].value === droppedText) {
+                        console.log('Hi there');
+                        console.log(delete prevState[val]);
+                        const newState = { ...prevState };
+                        delete newState[val];
+                        return {
+                            ...newState,
+                            [question.question_number]: {
+                                value: droppedText,
+                                question_id: question.id,
+                                question_type: question.question_type,
+                            },
+                        };
+                    }
+                }
+            }
+            return {
+                ...prevState,
+                [question.question_number]: {
+                    value: droppedText,
+                    question_id: question.id,
+                    question_type: question.question_type,
+                },
+            };
+        });
+    };
+
+    let i = 0;
+
+    const dropOut = (e, question) => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData('text');
+        // Set State of Questions
+        setQuestionValues((prevState) => {
+            const newState = { ...prevState };
+            delete newState[question.question_number];
+            return newState;
+        });
+        e.target.appendChild(document.getElementById(data));
+    };
+
+    const drag = (e) => {
+        e.dataTransfer.setData('text', e.target.id);
+    };
+
+    const allowDrop = (e) => {
+        e.preventDefault();
     };
 
     const startTimer = (e) => {
@@ -130,7 +180,7 @@ export default function ReadingTestPage() {
                 },
             });
 
-            // console.log(res.data);
+            console.log(res.data);
             setTestData(res.data);
             clearTimer(getDeadTime(res.data.time));
         } catch (err) {
@@ -183,7 +233,6 @@ export default function ReadingTestPage() {
     useEffect(() => {
         if (state?.id) {
             getTestData();
-            // clearTimer(getDeadTime());
         }
 
         return () => {
@@ -211,7 +260,8 @@ export default function ReadingTestPage() {
                                 <Grid item md={6}>
                                     <Box component="div" bgcolor={'white'} padding={2}>
                                         <h4>{item.group_name}</h4>
-                                        <p>{item.group_content}</p>
+                                        <div dangerouslySetInnerHTML={{ __html: item.group_content }}></div>
+                                        {/* <p>{item.group_content}</p> */}
                                     </Box>
                                 </Grid>
                                 <Grid item md={6}>
@@ -220,11 +270,12 @@ export default function ReadingTestPage() {
                                             {/* {testData?.test_groups?.map((item, index) => ( */}
                                             <>
                                                 <h4>{`Questions of ${item.group_name}`}</h4>
-                                                {item.test_questions.map((question, index) => {
+                                                {item.test_questions.map((question, index, arr) => {
                                                     if (question.question_type === 'single_choice') {
                                                         return (
                                                             <Accordion
                                                                 sx={{ maxWidth: 550 }}
+                                                                key={index}
                                                                 id={question.question_number}
                                                             >
                                                                 <AccordionSummary
@@ -243,6 +294,7 @@ export default function ReadingTestPage() {
                                                                             (hint) => (
                                                                                 <FormControlLabel
                                                                                     value={hint}
+                                                                                    key={hint}
                                                                                     onChange={(e) =>
                                                                                         handleChange(e, question)
                                                                                     }
@@ -267,6 +319,7 @@ export default function ReadingTestPage() {
                                                                     {JSON.parse(question.question_hint).map((hint) => (
                                                                         <FormControlLabel
                                                                             value={hint}
+                                                                            key={hint}
                                                                             onChange={(e) => handleChange(e, question)}
                                                                             control={<Checkbox />}
                                                                             label={hint}
@@ -291,6 +344,57 @@ export default function ReadingTestPage() {
                                                                         variant="outlined"
                                                                     />
                                                                 </FormGroup>
+                                                            </>
+                                                        );
+                                                    }
+                                                    if (question.question_type === 'drag_and_drop') {
+                                                        i += 1;
+                                                        return (
+                                                            <>
+                                                                <Typography id={question.question_number}>
+                                                                    <strong>{question.question_number}.</strong>{' '}
+                                                                    {question.question}
+                                                                </Typography>
+                                                                <div
+                                                                    onDrop={(e) => drop(e, question)}
+                                                                    style={{
+                                                                        minHeight: 40,
+                                                                        padding: 5,
+                                                                        border: '1px solid #666',
+                                                                        borderRadius: 5,
+                                                                    }}
+                                                                    onDragOver={allowDrop}
+                                                                ></div>
+                                                                {i === question.q_count && (
+                                                                    <div
+                                                                        onDrop={(e) => dropOut(e, question)}
+                                                                        style={{
+                                                                            minHeight: 40,
+                                                                            border: '1px solid #666',
+                                                                            marginTop: 10,
+                                                                        }}
+                                                                        onDragOver={allowDrop}
+                                                                    >
+                                                                        {JSON.parse(question.question_hint).map(
+                                                                            (hint, index) => (
+                                                                                <Typography
+                                                                                    draggable
+                                                                                    backgroundColor="#f5f5f5"
+                                                                                    paddingX={0.5}
+                                                                                    margin={1}
+                                                                                    borderRadius={5}
+                                                                                    border={'1px solid black'}
+                                                                                    display={'inline-block'}
+                                                                                    key={index}
+                                                                                    onDragStart={drag}
+                                                                                    id={hint}
+                                                                                >
+                                                                                    {hint}
+                                                                                </Typography>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </>
                                                         );
                                                     }
@@ -319,7 +423,7 @@ export default function ReadingTestPage() {
             >
                 <Grid container alignItems={'center'}>
                     <Grid sm={10} item>
-                        {testData?.test_groups?.map((item, index) => (
+                        {testData?.test_groups?.map((item) => (
                             <>
                                 <Grid container paddingX={1} columns={16} columnSpacing={1} marginY={0.4}>
                                     <Grid item>
@@ -331,7 +435,7 @@ export default function ReadingTestPage() {
                                         </Typography>
                                     </Grid>
                                     {item.test_questions.map((question) => (
-                                        <Grid item>
+                                        <Grid item key={question.question_number}>
                                             <Link
                                                 href={`#${question.question_number}`}
                                                 sx={{ margin: 0, border: 1, borderStyle: 'solid', px: 1 }}
@@ -359,265 +463,3 @@ export default function ReadingTestPage() {
         </div>
     );
 }
-
-// import Box from '@mui/material/Box';
-// import {
-//   Accordion,
-//   AccordionDetails,
-//   AccordionSummary,
-//   FormControl,
-//   Grid,
-//   Radio,
-//   RadioGroup,
-//   Typography,
-// } from '@mui/material';
-// import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-// import Checkbox from '@mui/material/Checkbox';
-// import FormGroup from '@mui/material/FormGroup';
-// import FormControlLabel from '@mui/material/FormControlLabel';
-
-// import Header from '../layouts/testDashboard/header';
-
-// export default function ReadingTestPage() {
-//   return (
-//     <div style={{ backgroundColor: '#b0e0e6' }}>
-//       <Header button="back" timer="000000" />
-//       <Box sx={{ flexGrow: 1, paddingBottom: 2 }}>
-//         <Grid container columns={16}>
-//           <Grid item xs={8} paddingX={1} bgcolor={'#fff'}>
-//             <h4>Part 1</h4>
-//             <h5>
-//               <span style={{ color: 'grey' }}>Read the text below and answer question </span>1-13
-//             </h5>
-//             <h4>WHAT IT'S LIKE TO HAVE SCHIZOPHRENIA</h4>
-//             <p>
-//               Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque ut, optio quae consectetur enim id eum
-//               recusandae impedit ab possimus odio voluptate facilis? Nostrum quod, facilis impedit similique laboriosam
-//               at, quo magni veritatis, maiores magnam placeat laborum fuga provident? Reiciendis in suscipit cum
-//               perspiciatis blanditiis quidem eum ratione, atque dolorum? Blanditiis unde dolorem excepturi esse culpa
-//               ullam libero porro, inventore optio dicta natus dolore vitae repellendus voluptates quibusdam nulla?
-//               Obcaecati.
-//             </p>
-//           </Grid>
-//           <Grid item xs={8} paddingX={1}>
-//             <h4>
-//               <span style={{ color: 'grey' }}>In question </span>1-5, Choose
-//             </h4>
-//             <h4>
-//               TRUE
-//               <span style={{ marginLeft: 40, color: 'grey' }}>if the statement is true according to the passage</span>
-//             </h4>
-//             <h4>
-//               FALSE
-//               <span style={{ marginLeft: 30, color: 'grey' }}>if the statement is false according to the passage</span>
-//             </h4>
-//             <h4>
-//               NOT GIVEN
-//               <span style={{ marginLeft: 15, color: 'grey' }}>if the information is not given in the passage</span>
-//             </h4>
-//             <div>
-//               <Accordion sx={{ maxWidth: 550 }}>
-//                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-//                   <Typography>Accordion 1</Typography>
-//                 </AccordionSummary>
-//                 <AccordionDetails>
-//                   <FormControl>
-//                     <RadioGroup
-//                       aria-labelledby="demo-radio-buttons-group-label"
-//                       defaultValue="female"
-//                       name="radio-buttons-group"
-//                     >
-//                       <FormControlLabel value="female" control={<Radio />} label="True" />
-//                       <FormControlLabel value="male" control={<Radio />} label="False" />
-//                       <FormControlLabel value="other" control={<Radio />} label="Not Given" />
-//                     </RadioGroup>
-//                   </FormControl>
-//                 </AccordionDetails>
-//               </Accordion>
-//               <Accordion sx={{ maxWidth: 550 }}>
-//                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel2a-content" id="panel2a-header">
-//                   <Typography>Accordion 2</Typography>
-//                 </AccordionSummary>
-//                 <AccordionDetails>
-//                   <FormControl>
-//                     <RadioGroup
-//                       aria-labelledby="demo-radio-buttons-group-label"
-//                       defaultValue="female"
-//                       name="radio-buttons-group"
-//                     >
-//                       <FormControlLabel value="female" control={<Radio />} label="True" />
-//                       <FormControlLabel value="male" control={<Radio />} label="False" />
-//                       <FormControlLabel value="other" control={<Radio />} label="Not Given" />
-//                     </RadioGroup>
-//                   </FormControl>
-//                 </AccordionDetails>
-//               </Accordion>
-//               <Accordion sx={{ maxWidth: 550 }}>
-//                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-//                   <Typography>Accordion 3</Typography>
-//                 </AccordionSummary>
-//                 <AccordionDetails>
-//                   <FormControl>
-//                     <RadioGroup
-//                       aria-labelledby="demo-radio-buttons-group-label"
-//                       defaultValue="female"
-//                       name="radio-buttons-group"
-//                     >
-//                       <FormControlLabel value="female" control={<Radio />} label="True" />
-//                       <FormControlLabel value="male" control={<Radio />} label="False" />
-//                       <FormControlLabel value="other" control={<Radio />} label="Not Given" />
-//                     </RadioGroup>
-//                   </FormControl>
-//                 </AccordionDetails>
-//               </Accordion>
-//             </div>
-//           </Grid>
-//         </Grid>
-//         <Grid container marginTop={2}>
-//           <Grid item alignSelf={'center'} paddingX={2}>
-//             <FormGroup>
-//               <FormControlLabel control={<Checkbox defaultChecked />} label="Review" />
-//             </FormGroup>
-//           </Grid>
-//           <div>
-//             <Grid container paddingX={1} columns={16} columnSpacing={1} marginY={1}>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>Part 1</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>1</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>2</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>3</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>4</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>5</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>6</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>7</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>8</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>9</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>10</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>11</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>12</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>13</h4>
-//               </Grid>
-//             </Grid>
-//             <Grid container paddingX={1} columns={16} columnSpacing={1} marginY={1}>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>Part 2</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>14</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>15</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>16</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>17</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>18</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>19</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>20</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>21</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>22</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>23</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>24</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>25</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>26</h4>
-//               </Grid>
-//             </Grid>
-//             <Grid container paddingX={1} columns={16} columnSpacing={1}>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>Part 3</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>27</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>28</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>29</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>30</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>31</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>32</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>33</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>34</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>35</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>36</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>37</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>38</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>39</h4>
-//               </Grid>
-//               <Grid item>
-//                 <h4 style={{ margin: 0, border: 1, borderStyle: 'solid', padding: 5 }}>40</h4>
-//               </Grid>
-//             </Grid>
-//           </div>
-//         </Grid>
-//       </Box>
-//     </div>
-//   );
-// }

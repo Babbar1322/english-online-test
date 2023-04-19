@@ -56,6 +56,8 @@
         "react/jsx-no-constructed-context-values": 0,
         "camelcase": "off",
         "eqeqeq": "off",
+        "no-restricted-syntax": "off",
+        "guard-for-in": "off",
         "react/self-closing-comp": "off",
         "no-unused-vars": [
             1,
