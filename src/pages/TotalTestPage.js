@@ -17,14 +17,13 @@ import {
     Typography,
     TableContainer,
     TablePagination,
-    Backdrop,
     CircularProgress,
     Box,
 } from '@mui/material';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // components
-import { selectToken, selectUser } from '../redux/slices/mainSlice';
+import { selectToken } from '../redux/slices/mainSlice';
 import Scrollbar from '../components/scrollbar';
 import Container from '../layouts/dashboard/container/Container';
 import axios from '../components/axios';
@@ -39,7 +38,7 @@ const TABLE_HEAD = [
     { id: 'test-id', label: 'Test ID', alignRight: false },
     { id: 'test-name', label: 'Test Name', alignRight: false },
     { id: 'date', label: 'Date', alignRight: false },
-    { id: 'total-question', label: 'Total Questions', alignRight: false },
+    // { id: 'total-question', label: 'Total Questions', alignRight: false },
     { id: 'view', label: 'View', alignRight: false },
 ];
 
@@ -85,7 +84,6 @@ export default function TotalTestPage() {
     const [data, setData] = useState([]);
 
     const token = useSelector(selectToken);
-    const user = useSelector(selectUser);
 
     const navigate = useNavigate();
 
@@ -97,58 +95,13 @@ export default function TotalTestPage() {
 
     const getAllTest = async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-all-test?user_id=${user.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await axios.get(`/get-all-test?token=${token}`);
             // console.log(res.data);
             setData(res.data);
         } catch (e) {
             console.log(e);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const takeTest = async (test_id, test_type) => {
-        try {
-            const res = await axios.post(
-                `${process.env.REACT_APP_API_URL}/take-test`,
-                {
-                    test_id,
-                    user_id: user.id,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            // console.log(res.data);
-            if (res.status === 200) {
-                setTestLoading(false);
-                if (test_type === 'writing') {
-                    navigate('/test/writing', { state: { id: res.data } });
-                } else {
-                    navigate('/test/reading', { state: { id: res.data } });
-                }
-            }
-        } catch (err) {
-            // console.log(err);
-            // alert(err.response.data);
-            // toast(err.response.data, {
-            //     position: 'top-right',
-            //     autoClose: 5000,
-            //     hideProgressBar: false,
-            //     closeOnClick: false,
-            //     pauseOnHover: true,
-            //     draggable: false,
-            //     progress: undefined,
-            //     theme: 'light',
-            //     type: 'error',
-            // });
         }
     };
 
@@ -218,14 +171,7 @@ export default function TotalTestPage() {
                                         {filteredUsers
                                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                             .map((row) => {
-                                                const {
-                                                    id,
-                                                    test_name,
-                                                    test_type,
-                                                    created_at,
-                                                    is_taken,
-                                                    total_questions,
-                                                } = row;
+                                                const { id, name, created_at, is_taken } = row;
 
                                                 return (
                                                     <TableRow hover key={id}>
@@ -237,11 +183,11 @@ export default function TotalTestPage() {
                                                             </Stack>
                                                         </TableCell>
 
-                                                        <TableCell align="left">{test_name}</TableCell>
+                                                        <TableCell align="left">{name}</TableCell>
 
-                                                        <TableCell align="left">{created_at}</TableCell>
-
-                                                        <TableCell align="left">{total_questions}</TableCell>
+                                                        <TableCell align="left">
+                                                            {new Date(created_at).toLocaleString('en-US')}
+                                                        </TableCell>
 
                                                         <TableCell align="left">
                                                             {is_taken ? (
@@ -263,29 +209,11 @@ export default function TotalTestPage() {
                                                                     color="success"
                                                                     sx={{ color: '#fff' }}
                                                                     disabled={testLoading}
-                                                                    onClick={() => {
-                                                                        toast.promise(
-                                                                            () => takeTest(id, test_type),
-                                                                            {
-                                                                                pending: 'Allocating Test...',
-                                                                                success: 'Test Successfully Allocated',
-                                                                                error: 'Test Already Taken by You!',
-                                                                            },
-                                                                            {
-                                                                                position: 'top-right',
-                                                                                autoClose: 5000,
-                                                                                hideProgressBar: false,
-                                                                                closeOnClick: false,
-                                                                                pauseOnHover: true,
-                                                                                draggable: false,
-                                                                                progress: undefined,
-                                                                                theme: 'light',
-                                                                                type: 'error',
-                                                                            }
-                                                                        );
-                                                                        setTestLoading(true);
-                                                                        // takeTest(id);
-                                                                    }}
+                                                                    onClick={() =>
+                                                                        navigate('/test/dashboard', {
+                                                                            state: { id },
+                                                                        })
+                                                                    }
                                                                 >
                                                                     Take Test
                                                                 </Button>

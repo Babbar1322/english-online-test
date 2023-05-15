@@ -15,7 +15,6 @@ import {
     Button,
     Link,
 } from '@mui/material';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -23,15 +22,16 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '../layouts/testDashboard/header';
 import Scrollbar from '../components/scrollbar';
 import Iconify from '../components/iconify';
-import { selectToken, selectUser } from '../redux/slices/mainSlice';
+import { selectToken } from '../redux/slices/mainSlice';
+import useAxios from '../hooks/useAxios';
 
 export default function ReadingTestPage() {
     const Ref = useRef(null);
     const token = useSelector(selectToken);
-    const user = useSelector(selectUser);
     const [testData, setTestData] = useState({});
     const { state } = useLocation();
     const navigate = useNavigate();
+    const axios = useAxios();
 
     // The state for our timer
     const [timer, setTimer] = useState('00:00:00');
@@ -39,6 +39,12 @@ export default function ReadingTestPage() {
 
     const handleChange = (e, question) => {
         if (e.target.type === 'checkbox') {
+            if (question.question_type === 'multi_question') {
+                // values must not be more than the number of questions
+                if (Object.keys(questionValues).length >= question.q_count) {
+                    return;
+                }
+            }
             setQuestionValues((prevState) => ({
                 ...prevState,
                 [question.question_number]: {
@@ -68,7 +74,6 @@ export default function ReadingTestPage() {
                 },
             }));
         }
-        console.log(questionValues);
     };
 
     const getTimeRemaining = (e) => {
@@ -83,9 +88,14 @@ export default function ReadingTestPage() {
             seconds,
         };
     };
+
     const drop = (e, question) => {
         e.preventDefault();
-        console.log(questionValues);
+        // console.log(questionValues);
+        // prevent from dropping more than one element
+        if (e.target.children.length > 0) {
+            return;
+        }
         const data = e.dataTransfer.getData('text');
         const droppedElement = document.getElementById(data);
         const droppedText = droppedElement.textContent;
@@ -93,7 +103,6 @@ export default function ReadingTestPage() {
 
         setQuestionValues((prevState) => {
             if (Object.keys(prevState).length > 0) {
-                console.log('Heelllloooo');
                 for (const val in prevState) {
                     console.log(prevState[val]);
                     if (prevState[val].value === droppedText) {
@@ -127,6 +136,9 @@ export default function ReadingTestPage() {
 
     const dropOut = (e, question) => {
         e.preventDefault();
+        if (e.target.classList.contains('noDrop')) {
+            return;
+        }
         const data = e.dataTransfer.getData('text');
         // Set State of Questions
         setQuestionValues((prevState) => {
@@ -154,6 +166,9 @@ export default function ReadingTestPage() {
                 }`
             );
         }
+        if (total <= 0) {
+            handleSubmit();
+        }
     };
 
     const clearTimer = (e) => {
@@ -174,11 +189,9 @@ export default function ReadingTestPage() {
 
     const getTestData = async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-test-details?id=${state?.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/get-test-details?id=${state?.id}&token=${token}`
+            );
 
             console.log(res.data);
             setTestData(res.data);
@@ -187,27 +200,23 @@ export default function ReadingTestPage() {
             console.log(err);
         }
     };
+    // console.log(questionValues);
 
     async function handleSubmit() {
         try {
-            const res = await axios.post(
-                `${process.env.REACT_APP_API_URL}/submit-test`,
-                {
-                    questionValues,
-                    test_id: state?.id,
-                    user_id: user.id,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const res = await axios.post('/submit-test', {
+                questionValues,
+                test_id: state?.id,
+                allocated_test_id: state?.allocated_test_id,
+                type: 'reading',
+                token,
+            });
             // console.log(res.data);
             if (res.status === 200) {
                 navigate('/test/review-test', {
                     state: {
                         id: state?.id,
+                        allocated_test_id: state?.allocated_test_id,
                     },
                 });
             }
@@ -223,11 +232,11 @@ export default function ReadingTestPage() {
                 theme: 'light',
                 type: 'error',
             });
-            navigate('/test/review-test', {
-                state: {
-                    id: state?.id,
-                },
-            });
+            // navigate('/test/review-test', {
+            //     state: {
+            //         id: state?.id,
+            //     },
+            // });
         }
     }
     useEffect(() => {
@@ -243,179 +252,301 @@ export default function ReadingTestPage() {
         <div>
             <ToastContainer />
             <Header button="back" timer={timer} />
-            <Scrollbar sx={{ maxHeight: '70vh' }}>
-                {testData?.test_groups?.map((item, index) => (
-                    <Accordion id={index} defaultExpanded={index === 0} key={index}>
-                        <AccordionSummary
-                            expandIcon={<Iconify icon="mdi:expand-more" />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
+            <div style={{ maxHeight: '80vh', overflow: 'auto' }}>
+                {testData?.test_groups?.map((item, index) => {
+                    i = 0;
+                    return (
+                        <Grid
+                            container
+                            gap={3}
+                            columns={13}
+                            key={index}
+                            sx={{
+                                borderBottom: '1px solid black',
+                                paddingBottom: '3%',
+                                marginBottom: '3%',
+                                justifyContent: 'space-around',
+                            }}
                         >
-                            <Typography>
-                                <strong>{item.group_name}</strong>
-                            </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ ml: 4 }}>
-                            <Grid container gap={3} columns={13}>
-                                <Grid item md={6}>
-                                    <Box component="div" bgcolor={'white'} padding={2}>
-                                        <h4>{item.group_name}</h4>
-                                        <div dangerouslySetInnerHTML={{ __html: item.group_content }}></div>
-                                        {/* <p>{item.group_content}</p> */}
-                                    </Box>
-                                </Grid>
-                                <Grid item md={6}>
-                                    <Scrollbar>
-                                        <div>
-                                            {/* {testData?.test_groups?.map((item, index) => ( */}
-                                            <>
-                                                <h4>{`Questions of ${item.group_name}`}</h4>
-                                                {item.test_questions.map((question, index, arr) => {
-                                                    if (question.question_type === 'single_choice') {
-                                                        return (
-                                                            <Accordion
-                                                                sx={{ maxWidth: 550 }}
-                                                                key={index}
-                                                                id={question.question_number}
-                                                            >
-                                                                <AccordionSummary
-                                                                    expandIcon={<Iconify icon="mdi:expand-more" />}
-                                                                    aria-controls="panel1a-content"
-                                                                    id="panel1a-header"
-                                                                >
-                                                                    <Typography>
-                                                                        <strong>{question.question_number}.</strong>{' '}
-                                                                        {question.question}
-                                                                    </Typography>
-                                                                </AccordionSummary>
-                                                                <AccordionDetails sx={{ ml: 4 }}>
-                                                                    <RadioGroup>
-                                                                        {JSON.parse(question.question_hint).map(
-                                                                            (hint) => (
-                                                                                <FormControlLabel
-                                                                                    value={hint}
-                                                                                    key={hint}
-                                                                                    onChange={(e) =>
-                                                                                        handleChange(e, question)
-                                                                                    }
-                                                                                    control={<Radio />}
-                                                                                    label={hint}
-                                                                                />
-                                                                            )
-                                                                        )}
-                                                                    </RadioGroup>
-                                                                </AccordionDetails>
-                                                            </Accordion>
-                                                        );
-                                                    }
-                                                    if (question.question_type === 'multi_choice') {
-                                                        return (
-                                                            <>
-                                                                <Typography id={question.question_number}>
-                                                                    <strong>{question.question_number}.</strong>{' '}
-                                                                    {question.question}
-                                                                </Typography>
-                                                                <FormGroup sx={{ ml: 4 }}>
-                                                                    {JSON.parse(question.question_hint).map((hint) => (
-                                                                        <FormControlLabel
-                                                                            value={hint}
-                                                                            key={hint}
-                                                                            onChange={(e) => handleChange(e, question)}
-                                                                            control={<Checkbox />}
-                                                                            label={hint}
-                                                                        />
-                                                                    ))}
-                                                                </FormGroup>
-                                                            </>
-                                                        );
-                                                    }
-                                                    if (question.question_type === 'input') {
-                                                        return (
-                                                            <>
-                                                                <Typography id={question.question_number}>
-                                                                    <strong>{question.question_number}.</strong>{' '}
-                                                                    {question.question}
-                                                                </Typography>
-                                                                <FormGroup sx={{ ml: 4 }}>
-                                                                    <TextField
-                                                                        type={'text'}
-                                                                        onChange={(e) => handleChange(e, question)}
-                                                                        label={question.question_number}
-                                                                        variant="outlined"
-                                                                    />
-                                                                </FormGroup>
-                                                            </>
-                                                        );
-                                                    }
-                                                    if (question.question_type === 'drag_and_drop') {
-                                                        i += 1;
-                                                        return (
-                                                            <>
-                                                                <Typography id={question.question_number}>
-                                                                    <strong>{question.question_number}.</strong>{' '}
-                                                                    {question.question}
-                                                                </Typography>
-                                                                <div
-                                                                    onDrop={(e) => drop(e, question)}
-                                                                    style={{
-                                                                        minHeight: 40,
-                                                                        padding: 5,
-                                                                        border: '1px solid #666',
-                                                                        borderRadius: 5,
-                                                                    }}
-                                                                    onDragOver={allowDrop}
-                                                                ></div>
-                                                                {i === question.q_count && (
-                                                                    <div
-                                                                        onDrop={(e) => dropOut(e, question)}
-                                                                        style={{
-                                                                            minHeight: 40,
-                                                                            border: '1px solid #666',
-                                                                            marginTop: 10,
-                                                                        }}
-                                                                        onDragOver={allowDrop}
-                                                                    >
-                                                                        {JSON.parse(question.question_hint).map(
-                                                                            (hint, index) => (
-                                                                                <Typography
-                                                                                    draggable
-                                                                                    backgroundColor="#f5f5f5"
-                                                                                    paddingX={0.5}
-                                                                                    margin={1}
-                                                                                    borderRadius={5}
-                                                                                    border={'1px solid black'}
-                                                                                    display={'inline-block'}
-                                                                                    key={index}
-                                                                                    onDragStart={drag}
-                                                                                    id={hint}
-                                                                                >
-                                                                                    {hint}
-                                                                                </Typography>
-                                                                            )
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        );
-                                                    }
-                                                    return false;
-                                                })}
-                                            </>
-                                            {/* ))} */}
-                                        </div>
-                                    </Scrollbar>
-                                </Grid>
+                            <Grid item md={6}>
+                                <Scrollbar sx={{ maxHeight: '80vh' }}>
+                                    <h4>{item.group_name}</h4>
+                                    <div dangerouslySetInnerHTML={{ __html: item.group_content }}></div>
+                                    {/* <p>{item.group_content}</p> */}
+                                </Scrollbar>
                             </Grid>
-                        </AccordionDetails>
-                    </Accordion>
-                ))}
-            </Scrollbar>
+                            <Grid item md={6}>
+                                <Scrollbar sx={{ maxHeight: '80vh' }}>
+                                    <h4>{`Questions of ${item.group_name}`}</h4>
+                                    {item.test_questions.map((question, index, array) => {
+                                        if (question.question_type === 'single_choice') {
+                                            return (
+                                                <Accordion
+                                                    sx={{
+                                                        mb:
+                                                            array[index + 1]?.question_type !== question.question_type
+                                                                ? 7
+                                                                : 0,
+                                                    }}
+                                                    key={index}
+                                                    defaultExpanded
+                                                    id={question.question_number}
+                                                >
+                                                    <AccordionSummary
+                                                        expandIcon={<Iconify icon="mdi:expand-more" />}
+                                                        aria-controls="panel1a-content"
+                                                        id="panel1a-header"
+                                                    >
+                                                        <Typography>
+                                                            <strong>{question.question_number}.</strong>{' '}
+                                                            {question.question}
+                                                        </Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails sx={{ ml: 4 }}>
+                                                        <RadioGroup>
+                                                            {JSON.parse(question.question_hint).map((hint) => (
+                                                                <FormControlLabel
+                                                                    value={hint}
+                                                                    key={hint}
+                                                                    onChange={(e) => handleChange(e, question)}
+                                                                    control={<Radio />}
+                                                                    label={hint}
+                                                                />
+                                                            ))}
+                                                        </RadioGroup>
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                            );
+                                        }
+                                        if (question.question_type === 'multi_choice') {
+                                            return (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        mb:
+                                                            array[index + 1]?.question_type !== question.question_type
+                                                                ? 7
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    <Typography id={question.question_number}>
+                                                        <strong>{question.question_number}.</strong> {question.question}
+                                                    </Typography>
+                                                    <FormGroup sx={{ ml: 4 }}>
+                                                        {JSON.parse(question.question_hint).map((hint) => (
+                                                            <FormControlLabel
+                                                                value={hint}
+                                                                key={hint}
+                                                                checked={
+                                                                    questionValues[question.question_number]?.value?.[
+                                                                        hint
+                                                                    ]
+                                                                }
+                                                                onChange={(e) => handleChange(e, question)}
+                                                                control={<Checkbox />}
+                                                                label={hint}
+                                                            />
+                                                        ))}
+                                                    </FormGroup>
+                                                </Box>
+                                            );
+                                        }
+                                        if (question.question_type === 'input') {
+                                            return (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        mb:
+                                                            array[index + 1]?.question_type !== question.question_type
+                                                                ? 7
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    <Typography id={question.question_number}>
+                                                        <strong>{question.question_number}.</strong> {question.question}
+                                                    </Typography>
+                                                    <FormGroup sx={{ ml: 4 }}>
+                                                        <TextField
+                                                            type={'text'}
+                                                            onChange={(e) => handleChange(e, question)}
+                                                            label={question.question_number}
+                                                            variant="outlined"
+                                                        />
+                                                    </FormGroup>
+                                                </Box>
+                                            );
+                                        }
+                                        if (question.question_type === 'drag_and_drop') {
+                                            i += 1;
+                                            return (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        mb:
+                                                            array[index + 1]?.question_type !== question.question_type
+                                                                ? 7
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    {i === 1 && (
+                                                        <Typography id={question.question_number} sx={{ mb: 2 }}>
+                                                            <strong>{question?.drag?.question}</strong>
+                                                        </Typography>
+                                                    )}
+                                                    <Typography id={question.question_number}>
+                                                        <strong>{question.question_number}.</strong> {question.question}
+                                                    </Typography>
+                                                    <div
+                                                        onDrop={(e) => drop(e, question)}
+                                                        style={{
+                                                            minHeight: 40,
+                                                            padding: 2,
+                                                            border: '1px solid #666',
+                                                            borderRadius: 5,
+                                                        }}
+                                                        onDragOver={allowDrop}
+                                                    ></div>
+                                                    {i === question.q_count && (
+                                                        <div
+                                                            onDrop={(e) => dropOut(e, question)}
+                                                            style={{
+                                                                minHeight: 100,
+                                                                border: '1px solid #666',
+                                                                marginTop: 10,
+                                                            }}
+                                                            onDragOver={allowDrop}
+                                                        >
+                                                            {JSON.parse(question.question_hint).map((hint, index) => (
+                                                                <Typography
+                                                                    draggable
+                                                                    className="noDrop"
+                                                                    backgroundColor="#f5f5f5"
+                                                                    paddingX={0.5}
+                                                                    margin={1}
+                                                                    borderRadius={5}
+                                                                    border={'1px solid black'}
+                                                                    display={'inline-block'}
+                                                                    key={index}
+                                                                    onDragStart={drag}
+                                                                    id={hint}
+                                                                >
+                                                                    {hint}
+                                                                </Typography>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </Box>
+                                            );
+                                        }
+                                        if (question.question_type === 'image') {
+                                            return (
+                                                question.q_count && (
+                                                    <Box
+                                                        key={index}
+                                                        sx={{
+                                                            mb:
+                                                                array[index + 1]?.question_type !==
+                                                                question.question_type
+                                                                    ? 7
+                                                                    : 0,
+                                                            position: 'relative',
+                                                        }}
+                                                    >
+                                                        <img
+                                                            key={question.question_number}
+                                                            src={question.image_url}
+                                                            style={{
+                                                                width: 500,
+                                                                // position: 'absolute',
+                                                                top: 0,
+                                                                left: 0,
+                                                            }}
+                                                            alt="containing question inputs"
+                                                        />
+                                                        {JSON.parse(question.imageQuestions).map((item, idx) => (
+                                                            <input
+                                                                key={idx}
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: JSON.parse(item.image_coordinates).y,
+                                                                    left: JSON.parse(item.image_coordinates).x,
+                                                                    backgroundColor: '#fff',
+                                                                    zIndex: 55,
+                                                                    border: '2px solid #666',
+                                                                    borderRadius: 5,
+                                                                }}
+                                                                type="text"
+                                                                placeholder={`Enter Answer For ${item.question_number}`}
+                                                                onChange={(e) => handleChange(e, item)}
+                                                            />
+                                                        ))}
+                                                        {/* <FormGroup
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: JSON.parse(question.image_coordinates).y,
+                                                            left: JSON.parse(question.image_coordinates).x,
+                                                            backgroundColor: '#f5f5f5',
+                                                            zIndex: 55,
+                                                        }}
+                                                    >
+                                                        <TextField
+                                                            type={'text'}
+                                                            onChange={(e) => handleChange(e, question)}
+                                                            label={question.question_number}
+                                                            variant="outlined"
+                                                        />
+                                                    </FormGroup> */}
+                                                    </Box>
+                                                )
+                                            );
+                                        }
+                                        if (question.question_type === 'multi_question') {
+                                            return (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        mb:
+                                                            array[index + 1]?.question_type !== question.question_type
+                                                                ? 7
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    <Typography id={question.question_number}>
+                                                        <strong>{question.question_number}.</strong> {question.question}
+                                                    </Typography>
+                                                    <Box key={question.id}>
+                                                        {/* <Typography id={question.question_number}>
+                                                                {hint}
+                                                            </Typography> */}
+                                                        <FormGroup sx={{ ml: 4 }}>
+                                                            {JSON.parse(question.question_hint).map((hint) => (
+                                                                <FormControlLabel
+                                                                    value={hint}
+                                                                    key={hint}
+                                                                    onChange={(e) => handleChange(e, question)}
+                                                                    control={<Checkbox />}
+                                                                    label={hint}
+                                                                />
+                                                            ))}
+                                                        </FormGroup>
+                                                    </Box>
+                                                </Box>
+                                            );
+                                        }
+                                        return false;
+                                    })}
+                                </Scrollbar>
+                            </Grid>
+                        </Grid>
+                    );
+                })}
+            </div>
             <div
                 style={{
                     position: 'fixed',
                     bottom: 0,
                     backgroundColor: '#fff',
-                    width: '85%',
+                    width: '95%',
                     zIndex: 666,
                     maxHeight: '20vh',
                     overflow: 'auto',

@@ -38,6 +38,8 @@ export default function NavSection({ data = [], ...other }) {
 
 NavItem.propTypes = {
   item: PropTypes.object,
+  isOpen: PropTypes.bool,
+  toggleOpen: PropTypes.func,
 };
 
 function NavItem({ item, isOpen, toggleOpen }) {

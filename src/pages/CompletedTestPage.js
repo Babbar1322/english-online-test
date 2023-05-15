@@ -1,6 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -8,33 +10,35 @@ import {
     Stack,
     Paper,
     Button,
-    Popover,
     TableRow,
-    MenuItem,
     TableBody,
     TableCell,
     // Container,
     Typography,
     TableContainer,
     TablePagination,
+    CircularProgress,
+    Box,
 } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // components
-import Iconify from '../components/iconify';
+import { selectToken } from '../redux/slices/mainSlice';
 import Scrollbar from '../components/scrollbar';
 import Container from '../layouts/dashboard/container/Container';
+import useAxios from '../hooks/useAxios';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import HISTORY from '../_mock/testCompleted';
+// import HISTORY from '../_mock/totalTest';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
     { id: 'test-id', label: 'Test ID', alignRight: false },
     { id: 'test-name', label: 'Test Name', alignRight: false },
-    { id: 'date', label: 'Date', alignRight: false },
-    { id: 'total-question', label: 'Total Questions', alignRight: false },
-    { id: 'time-spent', label: 'Time Spent', alignRight: false },
+    { id: 'date', label: 'Allocated on', alignRight: false },
+    // { id: 'total-question', label: 'Total Questions', alignRight: false },
     { id: 'view', label: 'View', alignRight: false },
 ];
 
@@ -70,26 +74,37 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function CompletedTestPage() {
-    const [open, setOpen] = useState(null);
-
     const [page, setPage] = useState(0);
-
     const [order, setOrder] = useState('asc');
-
     const [orderBy, setOrderBy] = useState('name');
-
     const [filterName, setFilterName] = useState('');
-
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [loading, setLoading] = useState(true);
+    const [testLoading, setTestLoading] = useState(false);
+    const [data, setData] = useState([]);
 
-    const handleCloseMenu = () => {
-        setOpen(null);
-    };
+    const axios = useAxios();
+
+    const token = useSelector(selectToken);
+
+    const navigate = useNavigate();
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
+    };
+
+    const getAllTest = async () => {
+        try {
+            const res = await axios.get(`/get-all-test?status=completed&token=${token}`);
+            // console.log(res.data);
+            setData(res.data);
+        } catch (e) {
+            console.log(e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleChangePage = (event, newPage) => {
@@ -106,17 +121,22 @@ export default function CompletedTestPage() {
         setFilterName(event.target.value);
     };
 
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - HISTORY.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
-    const filteredUsers = applySortFilter(HISTORY, getComparator(order, orderBy), filterName);
+    const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
     const isNotFound = !filteredUsers.length && !!filterName;
+
+    useEffect(() => {
+        getAllTest();
+    }, []);
 
     return (
         <>
             <Helmet>
                 <title> Completed Test | ESOL IELTS </title>
             </Helmet>
+            <ToastContainer />
 
             <Container>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
@@ -129,86 +149,120 @@ export default function CompletedTestPage() {
                     <UserListToolbar filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>
-                        <TableContainer sx={{ minWidth: 800 }}>
-                            <Table>
-                                <UserListHead
-                                    order={order}
-                                    orderBy={orderBy}
-                                    headLabel={TABLE_HEAD}
-                                    rowCount={HISTORY.length}
-                                    onRequestSort={handleRequestSort}
-                                />
-                                <TableBody>
-                                    {filteredUsers
-                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((row) => {
-                                            const { id, name, date, timeSpent, totalQuestions } = row;
-
-                                            return (
-                                                <TableRow hover key={id}>
-                                                    <TableCell component="th" scope="row" padding="normal">
-                                                        <Stack direction="row" alignItems="center" spacing={2}>
-                                                            <Typography variant="subtitle2" noWrap>
-                                                                IELTS {id.split('-')[0]}
-                                                            </Typography>
-                                                        </Stack>
-                                                    </TableCell>
-
-                                                    <TableCell align="left">{name}</TableCell>
-
-                                                    <TableCell align="left">{date.toDateString()}</TableCell>
-
-                                                    <TableCell align="left">
-                                                        {totalQuestions}/{totalQuestions - 3}
-                                                    </TableCell>
-                                                    <TableCell align="left">{timeSpent}</TableCell>
-
-                                                    <TableCell align="left">
-                                                        <Button variant="contained" color="success">
-                                                            Review
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    {emptyRows > 0 && (
-                                        <TableRow style={{ height: 53 * emptyRows }}>
-                                            <TableCell colSpan={6} />
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-
-                                {isNotFound && (
+                        {loading ? (
+                            <Box textAlign={'center'} py={2}>
+                                <CircularProgress />
+                            </Box>
+                        ) : data.length <= 0 ? (
+                            <Box py={2}>
+                                <Typography component={'h2'} textAlign="center">
+                                    No Data Found!!
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <TableContainer sx={{ minWidth: 800 }}>
+                                <Table>
+                                    <UserListHead
+                                        order={order}
+                                        orderBy={orderBy}
+                                        headLabel={TABLE_HEAD}
+                                        rowCount={data.length}
+                                        onRequestSort={handleRequestSort}
+                                    />
                                     <TableBody>
-                                        <TableRow>
-                                            <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                                <Paper
-                                                    sx={{
-                                                        textAlign: 'center',
-                                                    }}
-                                                >
-                                                    <Typography variant="h6" paragraph>
-                                                        Not found
-                                                    </Typography>
+                                        {filteredUsers
+                                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                            .map((row) => {
+                                                const { id, name, test, created_at, is_taken } = row;
 
-                                                    <Typography variant="body2">
-                                                        No results found for &nbsp;
-                                                        <strong>&quot;{filterName}&quot;</strong>.
-                                                        <br /> Try checking for typos or using complete words.
-                                                    </Typography>
-                                                </Paper>
-                                            </TableCell>
-                                        </TableRow>
+                                                return (
+                                                    <TableRow hover key={id}>
+                                                        <TableCell component="th" scope="row" padding="normal">
+                                                            <Stack direction="row" alignItems="center" spacing={2}>
+                                                                <Typography variant="subtitle2" noWrap>
+                                                                    {id}
+                                                                </Typography>
+                                                            </Stack>
+                                                        </TableCell>
+
+                                                        <TableCell align="left">{test?.name}</TableCell>
+
+                                                        <TableCell align="left">
+                                                            {new Date(created_at).toLocaleString('en-US')}
+                                                        </TableCell>
+
+                                                        <TableCell align="left">
+                                                            {is_taken ? (
+                                                                <Button
+                                                                    variant="contained"
+                                                                    color="info"
+                                                                    sx={{ ml: 1 }}
+                                                                    onClick={() =>
+                                                                        navigate('/test/review-test', {
+                                                                            state: { id },
+                                                                        })
+                                                                    }
+                                                                >
+                                                                    Preview
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    variant="contained"
+                                                                    color="primary"
+                                                                    sx={{ color: '#fff' }}
+                                                                    disabled={testLoading}
+                                                                    onClick={() =>
+                                                                        navigate('/test/dashboard', {
+                                                                            state: { id },
+                                                                        })
+                                                                    }
+                                                                >
+                                                                    Review
+                                                                </Button>
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        {emptyRows > 0 && (
+                                            <TableRow style={{ height: 53 * emptyRows }}>
+                                                <TableCell colSpan={6} />
+                                            </TableRow>
+                                        )}
                                     </TableBody>
-                                )}
-                            </Table>
-                        </TableContainer>
+
+                                    {isNotFound && (
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                                    <Paper
+                                                        sx={{
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        <Typography variant="h6" paragraph>
+                                                            Not found
+                                                        </Typography>
+
+                                                        <Typography variant="body2">
+                                                            No results found for &nbsp;
+                                                            <strong>&quot;{filterName}&quot;</strong>.
+                                                            <br /> Try checking for typos or using complete words.
+                                                        </Typography>
+                                                    </Paper>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    )}
+                                </Table>
+                            </TableContainer>
+                        )}
                     </Scrollbar>
 
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={HISTORY.length}
+                        count={data.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}
@@ -216,35 +270,6 @@ export default function CompletedTestPage() {
                     />
                 </Card>
             </Container>
-
-            <Popover
-                open={Boolean(open)}
-                anchorEl={open}
-                onClose={handleCloseMenu}
-                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                PaperProps={{
-                    sx: {
-                        p: 1,
-                        width: 140,
-                        '& .MuiMenuItem-root': {
-                            px: 1,
-                            typography: 'body2',
-                            borderRadius: 0.75,
-                        },
-                    },
-                }}
-            >
-                <MenuItem>
-                    <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-                    Edit
-                </MenuItem>
-
-                <MenuItem sx={{ color: 'error.main' }}>
-                    <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-                    Delete
-                </MenuItem>
-            </Popover>
         </>
     );
 }

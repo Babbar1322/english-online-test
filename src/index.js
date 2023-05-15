@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import 'react-toastify/dist/ReactToastify.css';
 import { persistor, store } from './redux/store';
 
 //
@@ -15,15 +16,15 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <Provider store={store}>
-    <PersistGate persistor={persistor}>
-      <HelmetProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </HelmetProvider>
-    </PersistGate>
-  </Provider>
+    <Provider store={store}>
+        <PersistGate persistor={persistor}>
+            <HelmetProvider>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </HelmetProvider>
+        </PersistGate>
+    </Provider>
 );
 
 // If you want to enable client cache, register instead.

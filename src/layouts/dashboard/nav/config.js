@@ -19,11 +19,6 @@ const navConfig = [
     hasChild: true,
     child: [
       {
-        title: 'total test',
-        path: '/dashboard/total-test',
-        icon: <Iconify icon="iconoir:page-flip" />,
-      },
-      {
         title: 'pending test',
         path: '/dashboard/pending-test',
         icon: <Iconify icon="mdi:paperclip" />,
@@ -33,11 +28,6 @@ const navConfig = [
         path: '/dashboard/completed-test',
         icon: <Iconify icon="ic:baseline-fact-check" />,
       },
-      {
-        title: 'test result',
-        path: '/dashboard/test-result',
-        icon: <Iconify icon="ic:outline-check-box" />,
-      },
     ],
   },
   // {
@@ -45,11 +35,11 @@ const navConfig = [
   //   path: '/dashboard/test-history',
   //   icon: icon('ic_cart'),
   // },
-  {
-    title: 'settings',
-    path: '/dashboard/settings',
-    icon: icon('ic_settings'),
-  },
+  // {
+  //   title: 'settings',
+  //   path: '/dashboard/settings',
+  //   icon: icon('ic_settings'),
+  // },
   // {
   //   title: 'plans and pricing',
   //   path: '/pricing',

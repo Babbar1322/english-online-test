@@ -3,8 +3,7 @@ import { sample } from 'lodash';
 
 // ----------------------------------------------------------------------
 
-const totalTest = [...Array(15)].map((_, index) => {
-  return {
+const totalTest = [...Array(15)].map(() => ({
     id: faker.datatype.uuid(),
     name: sample(['CD-IELTS', 'IELTS SPEAKING', 'CD-IELTS']),
     completation: faker.datatype.number({ min: 10, max: 100 }),
@@ -12,7 +11,6 @@ const totalTest = [...Array(15)].map((_, index) => {
     totalQuestions: faker.datatype.number({ min: 5, max: 30 }),
     timeSpent: sample([['0.10', '0.13', '0.18', '0.05', '0.11']]),
     status: sample(['Finished', 'Pending', 'Continued']),
-  };
-});
+  }));
 
 export default totalTest;

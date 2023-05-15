@@ -1,37 +1,21 @@
 import { React, useEffect, useState, useRef } from 'react';
-import {
-    Box,
-    Grid,
-    Accordion,
-    AccordionSummary,
-    Typography,
-    AccordionDetails,
-    FormGroup,
-    FormControlLabel,
-    Checkbox,
-    Radio,
-    RadioGroup,
-    TextField,
-    Button,
-    Link,
-} from '@mui/material';
-import axios from 'axios';
+import { Grid, Typography, FormGroup, TextField, Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../layouts/testDashboard/header';
 import Scrollbar from '../components/scrollbar';
-import Iconify from '../components/iconify';
-import { selectToken, selectUser } from '../redux/slices/mainSlice';
+import { selectToken } from '../redux/slices/mainSlice';
+import useAxios from '../hooks/useAxios';
 
 export default function WritingTestPage() {
     const Ref = useRef(null);
     const token = useSelector(selectToken);
-    const user = useSelector(selectUser);
     const [testData, setTestData] = useState({});
     const { state } = useLocation();
     const navigate = useNavigate();
+    const axios = useAxios();
 
     // The state for our timer
     const [timer, setTimer] = useState('00:00:00');
@@ -70,6 +54,9 @@ export default function WritingTestPage() {
                 }`
             );
         }
+        if (total <= 0) {
+            handleSubmit();
+        }
     };
 
     const clearTimer = (e) => {
@@ -90,11 +77,7 @@ export default function WritingTestPage() {
 
     const getTestData = async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-test-details?id=${state?.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await axios.get(`/get-test-details?id=${state?.id}&token=${token}`);
 
             console.log(res.data);
             setTestData(res.data);
@@ -106,27 +89,22 @@ export default function WritingTestPage() {
 
     async function handleSubmit() {
         try {
-            const res = await axios.post(
-                `${process.env.REACT_APP_API_URL}/submit-writing-test`,
-                {
-                    questionValues,
-                    test_id: state?.id,
-                    user_id: user.id,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const res = await axios.post('/submit-writing-test', {
+                questionValues,
+                test_id: state?.id,
+                allocated_test_id: state?.allocated_test_id,
+                type: 'writing',
+                token,
+            });
             // console.log(res.data);
-            // if (res.status === 200) {
-            //     navigate('/test/review-test', {
-            //         state: {
-            //             id: state?.id,
-            //         },
-            //     });
-            // }
+            if (res.status === 200) {
+                navigate('/test/review-writing-test', {
+                    state: {
+                        id: state?.id,
+                        allocated_test_id: state?.allocated_test_id,
+                    },
+                });
+            }
         } catch (err) {
             toast(err.response.data, {
                 position: 'top-right',
@@ -138,11 +116,6 @@ export default function WritingTestPage() {
                 progress: undefined,
                 theme: 'light',
                 type: 'error',
-            });
-            navigate('/test/review-writing-test', {
-                state: {
-                    id: state?.id,
-                },
             });
         }
     }
@@ -159,59 +132,65 @@ export default function WritingTestPage() {
         <div>
             <ToastContainer />
             <Header button="back" timer={timer} />
-            <Scrollbar sx={{ maxHeight: '70vh' }}>
+            <div style={{ maxHeight: '80vh' }}>
                 {testData?.test_groups?.map((item, index) => (
-                    <Accordion id={index} defaultExpanded={index === 0} key={index}>
-                        <AccordionSummary
-                            expandIcon={<Iconify icon="mdi:expand-more" />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                        >
-                            <Typography>
-                                <strong>{item.group_name}</strong>
-                            </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ ml: 4 }}>
-                            <Grid container gap={3} columns={13}>
-                                <Grid item md={6}>
-                                    <Scrollbar component="div" bgcolor={'white'} padding={2}>
-                                        <h4>{item.group_name}</h4>
-                                        <div dangerouslySetInnerHTML={{ __html: item.group_content }}></div>
-                                        {/* <p>{item.group_content}</p> */}
-                                    </Scrollbar>
-                                </Grid>
-                                <Grid item md={6}>
-                                    <Scrollbar>
-                                        <div>
-                                            {/* {testData?.test_groups?.map((item, index) => ( */}
-                                            <>
-                                                <h4>{`Questions of ${item.group_name}`}</h4>
-                                                <h4>Type your essay below and click Submit for evaluation</h4>
-                                                <FormGroup sx={{ ml: 4 }}>
-                                                    <TextField
-                                                        type={'text'}
-                                                        multiline
-                                                        rows={15}
-                                                        onChange={(e) => handleChange(e, item.id)}
-                                                        variant="outlined"
-                                                    />
-                                                </FormGroup>
-                                            </>
-                                            {/* ))} */}
-                                        </div>
-                                    </Scrollbar>
-                                </Grid>
-                            </Grid>
-                        </AccordionDetails>
-                    </Accordion>
+                    <Grid
+                        container
+                        gap={3}
+                        columns={13}
+                        key={index}
+                        sx={{
+                            borderBottom: '1px solid black',
+                            paddingBottom: '3%',
+                            marginBottom: '3%',
+                            justifyContent: 'space-around',
+                        }}
+                    >
+                        <Grid item md={6}>
+                            <Scrollbar component="div" bgcolor={'white'} padding={2}>
+                                <h4>{item.group_name}</h4>
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html: `${item.group_content}`,
+                                    }}
+                                ></div>
+                                {/* <p>{item.group_content}</p> */}
+                            </Scrollbar>
+                        </Grid>
+                        <Grid item md={6}>
+                            <Scrollbar>
+                                <div>
+                                    {/* {testData?.test_groups?.map((item, index) => ( */}
+                                    <>
+                                        <h4>{`Questions of ${item.group_name}`}</h4>
+                                        <h4>Type your essay below and click Submit for evaluation</h4>
+                                        <FormGroup sx={{ ml: 4 }}>
+                                            <TextField
+                                                type={'text'}
+                                                multiline
+                                                rows={15}
+                                                data-gramm={false}
+                                                data-gramm_editor={false}
+                                                data-enable-grammarly={false}
+                                                spellCheck={false}
+                                                onChange={(e) => handleChange(e, item.id)}
+                                                variant="outlined"
+                                            />
+                                        </FormGroup>
+                                    </>
+                                    {/* ))} */}
+                                </div>
+                            </Scrollbar>
+                        </Grid>
+                    </Grid>
                 ))}
-            </Scrollbar>
+            </div>
             <div
                 style={{
                     position: 'fixed',
                     bottom: 0,
                     backgroundColor: '#fff',
-                    width: '85%',
+                    width: '95%',
                     zIndex: 666,
                     maxHeight: '20vh',
                     overflow: 'auto',
@@ -230,16 +209,6 @@ export default function WritingTestPage() {
                                             {item.group_name}
                                         </Typography>
                                     </Grid>
-                                    {item.test_questions.map((question) => (
-                                        <Grid item key={question.question_number}>
-                                            <Link
-                                                href={`#${question.question_number}`}
-                                                sx={{ margin: 0, border: 1, borderStyle: 'solid', px: 1 }}
-                                            >
-                                                {question.question_number}
-                                            </Link>
-                                        </Grid>
-                                    ))}
                                 </Grid>
                             </>
                         ))}

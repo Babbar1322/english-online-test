@@ -9,15 +9,13 @@ import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 import { setLogin, setToken } from '../../../redux/slices/mainSlice';
-import axios from '../../../components/axios';
+import useAxios from '../../../hooks/useAxios';
 
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
     const dispatch = useDispatch();
-    // const navigate = useNavigate();
-
-    // const NavLink = forwardRef((props, ref) => <RouterLink ref={ref} {...props} />);
+    const axios = useAxios();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,20 +35,20 @@ export default function LoginForm() {
         try {
             // return;
             setLoading(true);
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
+            const res = await axios.post('/login', {
                 email,
                 password,
             });
-            // console.log(res.data);
+            console.log(res);
             if (res.status === 200) {
                 dispatch(setToken(res.data.token));
                 dispatch(setLogin({ user: res.data.user }));
                 // navigate('/dashboard/login');
             }
         } catch (err) {
-            console.log(err.response.data.error);
+            console.log(err);
             // alert(err);
-            toast(err.response.data.error, {
+            toast(err.response?.data.error, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,

@@ -4,11 +4,9 @@ import { useSelector } from 'react-redux';
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
-import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
-import TestResultPage from './pages/TestResultPage';
 import Page404 from './pages/Page404';
-import TotalTestPage from './pages/TotalTestPage';
+// import TotalTestPage from './pages/TotalTestPage';
 import PendingTestPage from './pages/PendingTestPage';
 import CompletedTestPage from './pages/CompletedTestPage';
 import DashboardAppPage from './pages/DashboardAppPage';
@@ -21,6 +19,8 @@ import ReadingTestPage from './pages/ReadingTestPage';
 import WritingTestPage from './pages/WritingTestPage';
 import { selectIsLoggedIn } from './redux/slices/mainSlice';
 import WritingTestReview from './pages/WritingTestReview';
+import ListeningTestPage from './pages/ListeningTestPage';
+import ReviewListeningTest from './pages/ReviewListeningTest';
 
 // ----------------------------------------------------------------------
 
@@ -38,11 +38,9 @@ export default function Router() {
             children: [
                 { element: <Navigate to="/dashboard/app" />, index: true },
                 { path: 'app', element: <DashboardAppPage /> },
-                { path: 'total-test', element: <TotalTestPage /> },
+                // { path: 'total-test', element: <TotalTestPage /> },
                 { path: 'pending-test', element: <PendingTestPage /> },
                 { path: 'completed-test', element: <CompletedTestPage /> },
-                { path: 'test-result', element: <TestResultPage /> },
-                { path: 'settings', element: <SettingsPage /> },
                 // { path: 'test', element: <TestDashboard /> },
             ],
         }),
@@ -71,8 +69,10 @@ export default function Router() {
                 { path: 'dashboard', element: <TestDashboard /> },
                 { path: 'reading', element: <ReadingTestPage /> },
                 { path: 'writing', element: <WritingTestPage /> },
+                { path: 'listening', element: <ListeningTestPage /> },
                 { path: 'review-test', element: <ReviewTest /> },
                 { path: 'review-writing-test', element: <WritingTestReview /> },
+                { path: 'review-listening-test', element: <ReviewListeningTest /> },
             ],
         }),
         {

@@ -8,11 +8,9 @@ import {
     AccordionDetails,
     FormGroup,
     TextField,
-    Link,
     Backdrop,
     CircularProgress,
 } from '@mui/material';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -20,74 +18,41 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '../layouts/testDashboard/header';
 import Scrollbar from '../components/scrollbar';
 import Iconify from '../components/iconify';
-import { selectToken, selectUser } from '../redux/slices/mainSlice';
+import { selectToken } from '../redux/slices/mainSlice';
+import useAxios from '../hooks/useAxios';
 
 export default function WritingTestReview() {
     const token = useSelector(selectToken);
-    const user = useSelector(selectUser);
     const [testData, setTestData] = useState([]);
     const [loading, setLoading] = useState(true);
     const { state } = useLocation();
+    const axios = useAxios();
     // console.log(state);
 
-    // The state for our timer
-    const [timer, setTimer] = useState('00:00:00');
-
-    // const startTimer = (e) => {
-    //     const { total, hours, minutes, seconds } = getTimeRemaining(e);
-    //     if (total >= 0) {
-    //         setTimer(
-    //             `${hours > 9 ? hours : `0${hours}`}:${minutes > 9 ? minutes : `0${minutes}`}:${
-    //                 seconds > 9 ? seconds : `0${seconds}`
-    //             }`
-    //         );
-    //     }
-    // };
     const getTestData = async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/get-test-details?id=${state?.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await axios.get(`/get-test-details?id=${state?.id}&token=${token}`);
 
-            console.log(res.data, 'TEST DATA');
-            getUserTestData(res.data);
+            console.log(res?.data, 'TEST DATA');
+            getUserTestData(res?.data);
         } catch (err) {
             console.log(err);
         }
     };
+    console.log(state);
 
     const getUserTestData = async (data) => {
         try {
-            const res = await axios.post(
-                `${process.env.REACT_APP_API_URL}/review-test`,
-                {
-                    test_id: state?.id,
-                    user_id: user.id,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const res = await axios.post('/review-test', {
+                test_id: state?.id,
+                allocated_test_id: state?.allocated_test_id,
+                token,
+            });
 
-            console.log(res.data, 'REVIEW TEST');
+            console.log(res?.data, 'REVIEW TEST');
             const newData = data?.test_groups?.map((item) => {
-                const matchingData = res.data.test.find((data) => data.question_id === item.id);
-                // const updatedQuestions = item.test_questions.map((question) => {
-                //     const matchingData = res.data.test.find((data) => data.question_id === question.id);
-                //     if (matchingData) {
-                //         return {
-                //             ...question,
-                //             user_answer: matchingData.question_value,
-                //             is_correct: matchingData.is_correct,
-                //         };
-                //     }
-                //     return question;
-                // });
-                return { ...item, user_input: matchingData.question_value };
+                const matchingData = res?.data?.test?.find((data) => data?.question_id === item?.id);
+                return { ...item, user_input: matchingData?.question_value, marks: matchingData?.marks };
             });
             console.log('new data', newData, 'new data');
             // setTestData(res.data);
@@ -111,16 +76,13 @@ export default function WritingTestReview() {
     };
 
     useEffect(() => {
-        // console.log(state);
         if (state?.id) {
             getTestData();
-            // getUserTestData();
-            // clearTimer(getDeadTime());
         }
     }, []);
     return (
         <div>
-            <Header button="back" timer={timer} />
+            <Header button="back" review />
             <ToastContainer />
             <Scrollbar>
                 <Backdrop sx={{ backgroundColor: '#fff' }} open={loading}>
@@ -149,23 +111,7 @@ export default function WritingTestReview() {
                                     </Grid>
                                     <Grid item md={6}>
                                         <Scrollbar>
-                                            {/* <div> */}
-                                            {/*    <> */}
-                                            {/*        <FormGroup sx={{ ml: 4 }}> */}
-                                            {/*            <TextField */}
-                                            {/*                type={'text'} */}
-                                            {/*                disabled */}
-                                            {/*                InputProps={{ */}
-                                            {/*                    borderColor: 'red', */}
-                                            {/*                }} */}
-                                            {/*                value={question.user_answer} */}
-                                            {/*                variant="outlined" */}
-                                            {/*            /> */}
-                                            {/*        </FormGroup> */}
-                                            {/*    </> */}
-                                            {/* </div> */}
                                             <div>
-                                                {/* {testData?.test_groups?.map((item, index) => ( */}
                                                 <>
                                                     <h4>{`Questions of ${item.group_name}`}</h4>
                                                     <h4>Type your essay below and click Submit for evaluation</h4>
@@ -179,8 +125,21 @@ export default function WritingTestReview() {
                                                             variant="outlined"
                                                         />
                                                     </FormGroup>
+                                                    <Typography sx={{ ml: 4, mt: 2 }}>
+                                                        {item.is_correct === null ? null : item.is_correct === true ? (
+                                                            <span style={{ color: 'green' }}>Correct</span>
+                                                        ) : (
+                                                            <span style={{ color: 'red' }}>Incorrect</span>
+                                                        )}
+                                                        {' - '}
+                                                        {item.marks === null
+                                                            ? 'Not Evaluated'
+                                                            : item.marks === undefined
+                                                            ? 'This is not Submitted'
+                                                            : `Marks Given - ${item.marks}`}
+                                                        {/* Marks Given - {item.marks} */}
+                                                    </Typography>
                                                 </>
-                                                {/* ))} */}
                                             </div>
                                         </Scrollbar>
                                     </Grid>
@@ -204,39 +163,6 @@ export default function WritingTestReview() {
                     </Box>
                 )}
             </Scrollbar>
-            {/* <div */}
-            {/*    style={{ */}
-            {/*        position: 'fixed', */}
-            {/*        bottom: 0, */}
-            {/*        backgroundColor: '#fff', */}
-            {/*        width: '85%', */}
-            {/*        zIndex: 666, */}
-            {/*        maxHeight: '20vh', */}
-            {/*        overflow: 'auto', */}
-            {/*    }} */}
-            {/* > */}
-            {/*    {testData?.test_groups?.map((item, index) => ( */}
-            {/*        <> */}
-            {/*            <Grid container paddingX={1} columns={16} columnSpacing={1} marginY={0.4}> */}
-            {/*                <Grid item> */}
-            {/*                    <Typography component={'h4'} sx={{ margin: 0, border: 1, borderStyle: 'solid', px: 1 }}> */}
-            {/*                        {item.group_name} */}
-            {/*                    </Typography> */}
-            {/*                </Grid> */}
-            {/*                {item.test_questions.map((question) => ( */}
-            {/*                    <Grid item key={question.question_number}> */}
-            {/*                        <Link */}
-            {/*                            href={`#${question.question_number}`} */}
-            {/*                            sx={{ margin: 0, border: 1, borderStyle: 'solid', px: 1 }} */}
-            {/*                        > */}
-            {/*                            {question.question_number} */}
-            {/*                        </Link> */}
-            {/*                    </Grid> */}
-            {/*                ))} */}
-            {/*            </Grid> */}
-            {/*        </> */}
-            {/*    ))} */}
-            {/* </div> */}
         </div>
     );
 }
