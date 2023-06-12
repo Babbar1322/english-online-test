@@ -40,14 +40,11 @@ export default function ListeningTestPage() {
     const handleChange = (e, question) => {
         if (e.target.type === 'checkbox') {
             if (question.question_type === 'multi_question') {
-                console.log('Multi Question');
                 // selected values must not be greater than question.q_count
-                console.log(Object.keys(questionValues).length);
                 if (Object.keys(questionValues).length >= 0) {
                     const selectedValues = Object?.values(questionValues)?.filter(
                         (item) => item.question_id === question.id
                     );
-                    console.log(selectedValues[0]);
 
                     if (e.target.checked) {
                         if (selectedValues[0] !== undefined) {
@@ -55,7 +52,6 @@ export default function ListeningTestPage() {
                                 (item) => selectedValues[0]?.value[item] === true
                             );
                             if (selectedValues.length > 0 && checkedValues.length >= question.q_count) {
-                                console.log('You cannot select more than ', question.q_count);
                                 return;
                             }
                         }
@@ -111,7 +107,6 @@ export default function ListeningTestPage() {
         if (e.target.children.length > 0) {
             return;
         }
-        console.log(questionValues);
         const data = e.dataTransfer.getData('text');
         const droppedElement = document.getElementById(data);
         const droppedText = droppedElement.textContent;
@@ -120,10 +115,7 @@ export default function ListeningTestPage() {
         setQuestionValues((prevState) => {
             if (Object.keys(prevState).length > 0) {
                 for (const val in prevState) {
-                    console.log(prevState[val]);
                     if (prevState[val].value === droppedText) {
-                        console.log('Hi there');
-                        console.log(delete prevState[val]);
                         const newState = { ...prevState };
                         delete newState[val];
                         return {
@@ -207,7 +199,6 @@ export default function ListeningTestPage() {
         try {
             const res = await axios.get(`/get-test-details?id=${state?.id}&type=listening&token=${token}`);
 
-            console.log(res.data);
             setTestData(res.data);
             clearTimer(getDeadTime(res.data.time));
         } catch (err) {
@@ -224,7 +215,6 @@ export default function ListeningTestPage() {
                 type: 'listening',
                 token,
             });
-            // console.log(res.data);
             if (res.status === 200) {
                 navigate('/test/review-listening-test', {
                     state: {
@@ -429,7 +419,7 @@ export default function ListeningTestPage() {
                                 return (
                                     question.q_count && (
                                         <Box
-                                            key={index}
+                                            key={question.question_number}
                                             sx={{
                                                 mb: array[index + 1]?.question_type !== question.question_type ? 7 : 0,
                                                 position: 'relative',

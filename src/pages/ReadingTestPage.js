@@ -40,9 +40,22 @@ export default function ReadingTestPage() {
     const handleChange = (e, question) => {
         if (e.target.type === 'checkbox') {
             if (question.question_type === 'multi_question') {
-                // values must not be more than the number of questions
-                if (Object.keys(questionValues).length >= question.q_count) {
-                    return;
+                // selected values must not be greater than question.q_count
+                if (Object.keys(questionValues).length >= 0) {
+                    const selectedValues = Object?.values(questionValues)?.filter(
+                        (item) => item.question_id === question.id
+                    );
+
+                    if (e.target.checked) {
+                        if (selectedValues[0] !== undefined) {
+                            const checkedValues = Object.keys(selectedValues[0]?.value).filter(
+                                (item) => selectedValues[0]?.value[item] === true
+                            );
+                            if (selectedValues.length > 0 && checkedValues.length >= question.q_count) {
+                                return;
+                            }
+                        }
+                    }
                 }
             }
             setQuestionValues((prevState) => ({

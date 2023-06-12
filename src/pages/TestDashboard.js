@@ -27,7 +27,7 @@ export default function TestDashboard() {
             setLoading(true);
             const res = await axios.get(`/get-combined-test/${state?.id}?token=${token}`);
 
-            console.log(res.data);
+            // console.log(res.data);
             setData(res.data);
         } catch (err) {
             console.log(err);
@@ -39,18 +39,18 @@ export default function TestDashboard() {
         try {
             const res = await axios.post('/take-test', {
                 test_id,
-                allocated_test_id: state.id,
+                allocated_test_id: state?.id,
                 token,
             });
 
             console.log(res.data);
             if (res.status === 200) {
                 if (test_type === 'writing') {
-                    navigate('/test/writing', { state: { id: res.data, allocated_test_id: state.id } });
+                    navigate('/test/writing', { state: { id: res.data, allocated_test_id: state?.id } });
                 } else if (test_type === 'listening') {
-                    navigate('/test/listening', { state: { id: res.data, allocated_test_id: state.id } });
+                    navigate('/test/listening', { state: { id: res.data, allocated_test_id: state?.id } });
                 } else {
-                    navigate('/test/reading', { state: { id: res.data, allocated_test_id: state.id } });
+                    navigate('/test/reading', { state: { id: res.data, allocated_test_id: state?.id } });
                 }
             }
         } catch (err) {
@@ -69,8 +69,16 @@ export default function TestDashboard() {
             });
         }
     };
+
+    const millisToMinutesAndSeconds = (millis) => {
+        const minutes = Math.floor(millis / 60000);
+        const seconds = ((millis % 60000) / 1000).toFixed(0);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        // return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    };
+
     useEffect(() => {
-        if (state.id) {
+        if (state?.id) {
             getTestData();
         }
     }, []);
@@ -78,7 +86,7 @@ export default function TestDashboard() {
         <div>
             <Header button="home" />
             <ToastContainer />
-            {!state.id ? (
+            {!state?.id ? (
                 <div>
                     <H2>
                         Bad Request!!
@@ -100,7 +108,13 @@ export default function TestDashboard() {
                                 <Typography align="center" sx={{ fontSize: '1.2rem' }}>
                                     Listening
                                 </Typography>
-                                <Grid container spacing={7} paddingY={2} alignItems={'center'}>
+                                <Grid
+                                    container
+                                    spacing={7}
+                                    paddingY={2}
+                                    alignItems={'center'}
+                                    justifyContent={'center'}
+                                >
                                     <Grid item alignItems={'center'}>
                                         <Iconify icon="ic:outline-book" />
                                         <Typography component={'span'}>
@@ -112,6 +126,39 @@ export default function TestDashboard() {
                                         <Typography component={'span'}>{data.listening_test.time} Minutes</Typography>
                                     </Grid>
                                 </Grid>
+                                {data.listening_test.is_taken &&
+                                    (data.listening_test.is_taken.total_score === null ? (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>Not Submitted</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ) : (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Time Taken:{' '}
+                                                    {millisToMinutesAndSeconds(data.listening_test.is_taken.time_taken)}{' '}
+                                                    Minutes
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Total Score: {data.listening_test.is_taken.total_score}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ))}
                                 {data.listening_test.is_taken ? (
                                     <Button
                                         // component={NavLink}
@@ -146,7 +193,7 @@ export default function TestDashboard() {
                                 <Typography align="center" sx={{ fontSize: '1.2rem' }}>
                                     Reading
                                 </Typography>
-                                <Grid container spacing={7} paddingY={2}>
+                                <Grid container spacing={7} paddingY={2} justifyContent={'center'}>
                                     <Grid item alignItems={'center'}>
                                         <Iconify icon="ic:outline-book" />
                                         <Typography component={'span'}>
@@ -158,6 +205,39 @@ export default function TestDashboard() {
                                         <Typography component={'span'}>{data.reading_test.time} Minutes</Typography>
                                     </Grid>
                                 </Grid>
+                                {data.reading_test.is_taken &&
+                                    (data.reading_test.is_taken.total_score === null ? (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>Not Submitted</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ) : (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Time Taken:{' '}
+                                                    {millisToMinutesAndSeconds(data.reading_test.is_taken.time_taken)}{' '}
+                                                    Minutes
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Total Score: {data.reading_test.is_taken.total_score}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ))}
                                 {data.reading_test.is_taken ? (
                                     <Button
                                         // component={NavLink}
@@ -195,6 +275,39 @@ export default function TestDashboard() {
                                         <Typography component={'span'}>{data.writing_test.time} Minutes</Typography>
                                     </Grid>
                                 </Grid>
+                                {data.writing_test.is_taken &&
+                                    (data.writing_test.is_taken.total_score === null ? (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>Not Submitted</Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ) : (
+                                        <Grid
+                                            container
+                                            spacing={4}
+                                            alignItems={'center'}
+                                            justifyContent={'space-around'}
+                                        >
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Time Taken:{' '}
+                                                    {millisToMinutesAndSeconds(data.writing_test.is_taken.time_taken)}{' '}
+                                                    Minutes
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item>
+                                                <Typography mb={2}>
+                                                    Total Score: {data.writing_test.is_taken.total_score}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ))}
                                 {data.writing_test.is_taken ? (
                                     <Button
                                         // component={NavLink}
