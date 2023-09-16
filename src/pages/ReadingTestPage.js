@@ -117,10 +117,10 @@ export default function ReadingTestPage() {
         setQuestionValues((prevState) => {
             if (Object.keys(prevState).length > 0) {
                 for (const val in prevState) {
-                    console.log(prevState[val]);
+                    // console.log(prevState[val]);
                     if (prevState[val].value === droppedText) {
-                        console.log('Hi there');
-                        console.log(delete prevState[val]);
+                        // console.log('Hi there');
+                        // console.log(delete prevState[val]);
                         const newState = { ...prevState };
                         delete newState[val];
                         return {
@@ -206,7 +206,7 @@ export default function ReadingTestPage() {
                 `${process.env.REACT_APP_API_URL}/get-test-details?id=${state?.id}&token=${token}`
             );
 
-            console.log(res.data);
+            // console.log(res.data);
             setTestData(res.data);
             clearTimer(getDeadTime(res.data.time));
         } catch (err) {

@@ -24,7 +24,7 @@ export default function DashboardAppPage() {
         try {
             setLoading(true);
             const res = await axios.get(`/userDetails?token=${token}`);
-            console.log(res.data);
+            // console.log(res.data);
             // if (res.status === 200) {
             //   dispatch(setLogin({ user: res.data }));
             // }

@@ -33,13 +33,13 @@ export default function WritingTestReview() {
         try {
             const res = await axios.get(`/get-test-details?id=${state?.id}&token=${token}`);
 
-            console.log(res?.data, 'TEST DATA');
+            // console.log(res?.data, 'TEST DATA');
             getUserTestData(res?.data);
         } catch (err) {
             console.log(err);
         }
     };
-    console.log(state);
+    // console.log(state);
 
     const getUserTestData = async (data) => {
         try {
@@ -49,12 +49,12 @@ export default function WritingTestReview() {
                 token,
             });
 
-            console.log(res?.data, 'REVIEW TEST');
+            // console.log(res?.data, 'REVIEW TEST');
             const newData = data?.test_groups?.map((item) => {
                 const matchingData = res?.data?.test?.find((data) => data?.question_id === item?.id);
                 return { ...item, user_input: matchingData?.question_value, marks: matchingData?.marks };
             });
-            console.log('new data', newData, 'new data');
+            // console.log('new data', newData, 'new data');
             // setTestData(res.data);
             setTestData(newData);
         } catch (err) {

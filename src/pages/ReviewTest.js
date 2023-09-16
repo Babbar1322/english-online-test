@@ -80,7 +80,7 @@ export default function ReadingTestPage() {
                 });
                 return { ...item, test_questions: updatedQuestions };
             });
-            console.log('new data', newData, 'new data');
+            // console.log('new data', newData, 'new data');
             // setTestData(res.data);
             setTestData(newData);
         } catch (err) {
@@ -118,7 +118,7 @@ export default function ReadingTestPage() {
                 <CircularProgress />
             </Backdrop>
             <div style={{ maxHeight: '80vh', overflow: 'auto' }}>
-                {testData.length > 1 && !loading ? (
+                {testData.length > 0 && !loading ? (
                     testData?.map((item, index) => (
                         // <Accordion id={index} defaultExpanded key={index}>
                         //     <AccordionSummary

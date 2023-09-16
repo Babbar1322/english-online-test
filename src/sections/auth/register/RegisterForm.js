@@ -47,7 +47,7 @@ export default function RegisterForm() {
                 phone,
                 password,
             });
-            console.log(res.data);
+            // console.log(res.data);
             dispatch(setLogin());
         } catch (err) {
             console.log(err);

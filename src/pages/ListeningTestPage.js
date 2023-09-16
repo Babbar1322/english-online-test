@@ -418,43 +418,55 @@ export default function ListeningTestPage() {
                             if (question.question_type === 'image') {
                                 return (
                                     question.q_count && (
-                                        <Box
-                                            key={question.question_number}
-                                            sx={{
-                                                mb: array[index + 1]?.question_type !== question.question_type ? 7 : 0,
-                                                position: 'relative',
-                                            }}
-                                        >
-                                            <img
+                                        <>
+                                            <Typography id={question.question_number}>
+                                                <strong>{question.question_number}.</strong> {question.question}
+                                            </Typography>
+                                            <Box
                                                 key={question.question_number}
-                                                src={question.image_url}
-                                                style={{
-                                                    width: 500,
-                                                    top: 0,
-                                                    left: 0,
+                                                sx={{
+                                                    mb:
+                                                        array[index + 1]?.question_type !== question.question_type
+                                                            ? 7
+                                                            : 0,
+                                                    position: 'relative',
                                                 }}
-                                                alt="containing question inputs"
-                                            />
-                                            {isJson(question.imageQuestions)
-                                                ? JSON.parse(question.imageQuestions).map((item, idx) => (
-                                                      <input
-                                                          key={idx}
-                                                          style={{
-                                                              position: 'absolute',
-                                                              top: JSON.parse(item.image_coordinates).y,
-                                                              left: JSON.parse(item.image_coordinates).x,
-                                                              backgroundColor: '#fff',
-                                                              zIndex: 55,
-                                                              border: '2px solid #666',
-                                                              borderRadius: 5,
-                                                          }}
-                                                          type="text"
-                                                          placeholder={`Enter Answer For ${item.question_number}`}
-                                                          onChange={(e) => handleChange(e, item)}
-                                                      />
-                                                  ))
-                                                : 'Something went wrong'}
-                                        </Box>
+                                            >
+                                                <img
+                                                    key={question.question_number}
+                                                    src={question.image_url}
+                                                    style={{
+                                                        width: 500,
+                                                        top: 0,
+                                                        left: 0,
+                                                    }}
+                                                    alt="containing question inputs"
+                                                />
+                                                {isJson(question.imageQuestions)
+                                                    ? JSON.parse(question.imageQuestions).map((item, idx) => (
+                                                          <input
+                                                              key={idx}
+                                                              style={{
+                                                                  position: 'absolute',
+                                                                  top: isJson(item.image_coordinates)
+                                                                      ? JSON.parse(item.image_coordinates).y
+                                                                      : 0,
+                                                                  left: isJson(item.image_coordinates)
+                                                                      ? JSON.parse(item.image_coordinates).x
+                                                                      : 0,
+                                                                  backgroundColor: '#fff',
+                                                                  zIndex: 55,
+                                                                  border: '2px solid #666',
+                                                                  borderRadius: 5,
+                                                              }}
+                                                              type="text"
+                                                              placeholder={`Enter Answer For ${item.question_number}`}
+                                                              onChange={(e) => handleChange(e, item)}
+                                                          />
+                                                      ))
+                                                    : 'Something went wrong'}
+                                            </Box>
+                                        </>
                                     )
                                 );
                             }

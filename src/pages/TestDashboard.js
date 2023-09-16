@@ -43,7 +43,7 @@ export default function TestDashboard() {
                 token,
             });
 
-            console.log(res.data);
+            // console.log(res.data);
             if (res.status === 200) {
                 if (test_type === 'writing') {
                     navigate('/test/writing', { state: { id: res.data, allocated_test_id: state?.id } });

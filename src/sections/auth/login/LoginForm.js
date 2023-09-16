@@ -39,7 +39,7 @@ export default function LoginForm() {
                 email,
                 password,
             });
-            console.log(res);
+            // console.log(res);
             if (res.status === 200) {
                 dispatch(setToken(res.data.token));
                 dispatch(setLogin({ user: res.data.user }));

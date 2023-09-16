@@ -79,7 +79,7 @@ export default function WritingTestPage() {
         try {
             const res = await axios.get(`/get-test-details?id=${state?.id}&token=${token}`);
 
-            console.log(res.data);
+            // console.log(res.data);
             setTestData(res.data);
             clearTimer(getDeadTime(res.data.time));
         } catch (err) {

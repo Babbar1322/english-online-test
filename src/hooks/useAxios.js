@@ -17,13 +17,13 @@ const useAxios = () => {
 
     instance.interceptors.response.use(
         (res) => {
-            console.log(res, 'Response');
+            // console.log(res, 'Response');
             return res;
         },
         (err) => {
             console.log(err.response, 'Error');
             if (err.response && err.response.data.message === 'Token has expired') {
-                console.log('Token has expired');
+                // console.log('Token has expired');
                 toast.error('Your Login Session has expired. Please login again.');
                 dispatch(setLogout());
             }

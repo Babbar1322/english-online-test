@@ -36,21 +36,6 @@ export default function ReadingTestPage() {
     const [audio, setAudio] = useState('');
     const { state } = useLocation();
     const axios = useAxios();
-    // console.log(state);
-
-    // The state for our timer
-    const [timer, setTimer] = useState('00:00:00');
-
-    // const startTimer = (e) => {
-    //     const { total, hours, minutes, seconds } = getTimeRemaining(e);
-    //     if (total >= 0) {
-    //         setTimer(
-    //             `${hours > 9 ? hours : `0${hours}`}:${minutes > 9 ? minutes : `0${minutes}`}:${
-    //                 seconds > 9 ? seconds : `0${seconds}`
-    //             }`
-    //         );
-    //     }
-    // };
     const getTestData = async () => {
         try {
             const res = await axios.get(`/get-test-details?id=${state?.id}&type=listening&token=${token}&mode=review`);
@@ -63,8 +48,6 @@ export default function ReadingTestPage() {
             console.log(err);
         }
     };
-    console.log(user.id, 'User id');
-    console.log(state, 'Test id');
 
     const getUserTestData = async (data) => {
         try {
@@ -85,18 +68,10 @@ export default function ReadingTestPage() {
                             is_correct: matchingData.is_correct,
                         };
                     }
-                    // if (question.question_type === 'image') {
-                    //     return {
-                    //         ...question,
-                    //         imageAnswers: matchingData.imageAnswers,
-                    //     };
-                    // }
                     return question;
                 });
                 return { ...item, test_questions: updatedQuestions };
             });
-            console.log('new data', newData, 'new data');
-            // setTestData(res.data);
             setTestData(newData);
         } catch (err) {
             // console.log(err);
@@ -120,8 +95,6 @@ export default function ReadingTestPage() {
         // console.log(state);
         if (state?.id) {
             getTestData();
-            // getUserTestData();
-            // clearTimer(getDeadTime());
         }
     }, []);
     return (
@@ -133,7 +106,7 @@ export default function ReadingTestPage() {
                     <CircularProgress />
                 </Backdrop>
                 {/* {console.log(testData.length)} */}
-                {testData.length > 1 && !loading ? (
+                {testData.length > 0 && !loading ? (
                     testData?.map((item, index) => (
                         <div key={index}>
                             <h4>{`Questions of ${item.group_name}`}</h4>
@@ -176,8 +149,6 @@ export default function ReadingTestPage() {
                                                     <Typography color={'#4caf50'}>
                                                         <Iconify
                                                             icon="mdi:check-circle-outline"
-                                                            // color="#4caf50"
-                                                            // width={30}
                                                             sx={{ ml: 2 }}
                                                         />{' '}
                                                         Your Answer is Correct
@@ -186,8 +157,6 @@ export default function ReadingTestPage() {
                                                     <Typography color={'#f44336'}>
                                                         <Iconify
                                                             icon="mdi:close-circle-outline"
-                                                            // color="#4caf50"
-                                                            // width={30}
                                                             sx={{ ml: 2 }}
                                                         />{' '}
                                                         Your Answer is Wrong {question.answer}
@@ -221,7 +190,7 @@ export default function ReadingTestPage() {
                                                                       ? JSON.parse(question?.user_answer).some(
                                                                             (answer) => answer === hint
                                                                         )
-                                                                      : 'Something went wrong'
+                                                                      : false
                                                               }
                                                               label={hint}
                                                           />
@@ -232,8 +201,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#4caf50'}>
                                                     <Iconify
                                                         icon="mdi:check-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Correct
@@ -242,8 +209,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#f44336'}>
                                                     <Iconify
                                                         icon="mdi:close-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Wrong
@@ -279,8 +244,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#4caf50'}>
                                                     <Iconify
                                                         icon="mdi:check-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Correct
@@ -289,8 +252,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#f44336'}>
                                                     <Iconify
                                                         icon="mdi:close-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Wrong
@@ -324,8 +285,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#4caf50'}>
                                                     <Iconify
                                                         icon="mdi:check-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Correct
@@ -334,8 +293,6 @@ export default function ReadingTestPage() {
                                                 <Typography color={'#f44336'}>
                                                     <Iconify
                                                         icon="mdi:close-circle-outline"
-                                                        // color="#4caf50"
-                                                        // width={30}
                                                         sx={{ ml: 2 }}
                                                     />{' '}
                                                     Your Answer is Wrong
@@ -362,7 +319,6 @@ export default function ReadingTestPage() {
                                                     src={question.image_url}
                                                     style={{
                                                         width: 500,
-                                                        // position: 'absolute',
                                                         top: 0,
                                                         left: 0,
                                                     }}
@@ -374,8 +330,8 @@ export default function ReadingTestPage() {
                                                               key={idx}
                                                               style={{
                                                                   position: 'absolute',
-                                                                  top: JSON.parse(item?.image_coordinates).y,
-                                                                  left: JSON.parse(item?.image_coordinates).x,
+                                                                  top: isJson(item?.image_coordinates) ? JSON.parse(item?.image_coordinates).y : null,
+                                                                  left: isJson(item?.image_coordinates) ? JSON.parse(item?.image_coordinates).x : null,
                                                                   backgroundColor: '#fff',
                                                                   zIndex: 55,
                                                                   border: '2px solid #666',
@@ -384,7 +340,7 @@ export default function ReadingTestPage() {
                                                               }}
                                                               type="text"
                                                               disabled
-                                                              value={JSON.parse(question?.user_answer)[idx]}
+                                                              value={isJson(question?.user_answer) ? JSON.parse(question?.user_answer)[idx] : ""}
                                                               placeholder={`Enter Answer For ${item.question_number}`}
                                                           />
                                                       ))
@@ -409,21 +365,18 @@ export default function ReadingTestPage() {
                                                 {question.question}
                                             </Typography>
                                             <Box key={question.id}>
-                                                {/* <Typography id={question.question_number}>
-                                                        {hint}
-                                                    </Typography> */}
                                                 <FormGroup sx={{ ml: 4 }}>
                                                     {isJson(question.question_hint)
                                                         ? JSON.parse(question?.question_hint)?.map((hint) => (
                                                               <FormControlLabel
                                                                   value={hint}
                                                                   key={hint}
-                                                                  control={<Checkbox />}
+                                                                  control={<Checkbox color='success' />}
                                                                   label={hint}
                                                                   disabled
-                                                                  checked={JSON.parse(question?.user_answer)?.some(
+                                                                  checked={isJson(question?.user_answer) ? JSON.parse(question?.user_answer)?.some(
                                                                       (answer) => answer === hint
-                                                                  )}
+                                                                  ): false}
                                                               />
                                                           ))
                                                         : 'Something went wrong'}

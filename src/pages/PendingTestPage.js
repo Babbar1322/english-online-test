@@ -97,7 +97,7 @@ export default function PendingTestPage() {
     const getAllTest = async () => {
         try {
             const res = await axios.get(`/get-all-test?status=pending&token=${token}`);
-            console.log(res.data);
+            // console.log(res.data);
             setData(res.data);
         } catch (e) {
             console.log(e);
